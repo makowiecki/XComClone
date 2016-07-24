@@ -44,7 +44,7 @@ void ATile::Tick( float DeltaTime )
 
 }
 
-static const FVector ATile::getSize()
+const FVector ATile::getSize()
 {
 	return FVector(100.f, 100.f, 5.f);
 	//return TileMesh->StaticMesh->GetBoundingBox().GetSize();

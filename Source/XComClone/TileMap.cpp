@@ -95,7 +95,7 @@ void ATileMap::AdjustNumberOfTiles()
 				//set position
 				Tile->setMapPosition(X, Y);
 
-				FVector Position = GetActorLocation() + FVector(Tile->MapX * Tile::getSize().X, Tile->MapY * Tile::getSize().Y, 0.f);
+				FVector Position = GetActorLocation() + FVector(Tile->MapX * ATile::getSize().X, Tile->MapY * ATile::getSize().Y, 0.f);
 				Tile->SetActorLocation(Position);
 
 				NewTiles[Y * ColumnCount + X] = Tile;
