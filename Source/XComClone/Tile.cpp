@@ -44,9 +44,16 @@ void ATile::Tick( float DeltaTime )
 
 }
 
-const FVector ATile::getSize()const
+static const FVector ATile::getSize()
 {
-	return TileMesh->StaticMesh->GetBoundingBox().GetSize();
+	return FVector(100.f, 100.f, 5.f);
+	//return TileMesh->StaticMesh->GetBoundingBox().GetSize();
+}
+
+void ATile::setMapPosition(int32 pX, int32 pY)
+{
+	MapX = pX;
+	MapY = pY;
 }
 
 //void ATile::doOnMouseOver(UPrimitiveComponent* TouchedComponent)

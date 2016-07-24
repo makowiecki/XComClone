@@ -34,10 +34,9 @@ public:
 	// Called every frame
 	virtual void Tick( float DeltaSeconds ) override;
 
-	const FVector getSize()const;
+	static const FVector getSize();
 
-	//UFUNCTION()
-	//void doOnMouseOver(UPrimitiveComponent* TouchedComponent);
+	void setMapPosition(int32 pX, int32 pY);
 
 
 	FORCEINLINE class UStaticMeshComponent* GetMesh() const { return TileMesh; }
@@ -47,12 +46,12 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Body, meta = (AllowPrivateAccess = "true"))
 	class UStaticMeshComponent *TileMesh;
 
-	UFUNCTION()
-	void Clicked();
+	//UFUNCTION()
+	//void Clicked();
 
-	UFUNCTION()
-	void CursorOver();
+	//UFUNCTION()
+	//void CursorOver();
 
-	UFUNCTION() 
-	void EndCursorOver();
+	//UFUNCTION() 
+	//void EndCursorOver();
 };
