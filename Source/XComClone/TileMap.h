@@ -4,6 +4,7 @@
 
 #include "GameFramework/Actor.h"
 #include "Array.h"
+#include "Tile.h"
 #include "TileMap.generated.h"
 
 
@@ -35,21 +36,25 @@ public:
 	virtual void Tick( float DeltaSeconds ) override;
 
 
-	FORCEINLINE class USphereComponent* GetBaseRoot() const { return BaseRoot; }
+	FORCEINLINE class USceneComponent* GetBaseRoot() const { return BaseRoot; }
 
 
 protected:
 
-	virtual void PostInitializeComponents()override;
-
 	virtual void OnConstruction(const FTransform& Transform)override;
+
+	virtual void Destroyed() override;
 	
 private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Body, meta = (AllowPrivateAccess = "true"))
-	class USphereComponent* BaseRoot;
+	class USceneComponent* BaseRoot;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Body, meta = (AllowPrivateAccess = "true"))
-	TArray<UChildActorComponent*> mTilesArray;
+	UPROPERTY()
+	TArray<ATile*>	mTilesArray;
 
+	int32 mPreviousRowCount;
+	int32 mPreviousColumnCount;
+
+	void AdjustNumberOfTiles();
 };

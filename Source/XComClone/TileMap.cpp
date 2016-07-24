@@ -2,8 +2,8 @@
 
 #include "XComClone.h"
 #include "TileMap.h"
-#include "Tile.h"
 
+#include "Editor.h"
 
 // Sets default values
 ATileMap::ATileMap()
@@ -11,101 +11,102 @@ ATileMap::ATileMap()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	//PrimaryActorTick.bCanEverTick = true;
 
-	BaseRoot = CreateDefaultSubobject<USphereComponent>(TEXT("RootComponent"));
-	BaseRoot->SetupAttachment(RootComponent);
+	BaseRoot = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
 	BaseRoot->SetMobility(EComponentMobility::Static);
-	BaseRoot->SetWorldLocation(FVector(0.f, 0.f, 0.f));
-	
-	RowCount = 14;
-	ColumnCount = 15;
-	
-	mTilesArray.Reserve(RowCount * ColumnCount);
+	BaseRoot->SetWorldLocation(FVector(0.f, 0.f, 0.f));	
+	RootComponent = BaseRoot;
 
-	for(size_t i = 0; i < RowCount * ColumnCount; i++)
-	{
-		FString CompName = FString(TEXT("Tile")).Append(FString::FromInt(i));
-		UChildActorComponent* newComp = CreateDefaultSubobject<UChildActorComponent>(FName(*CompName));
-		newComp->SetMobility(EComponentMobility::Static);
-		newComp->SetChildActorClass(ATile::StaticClass());
-		newComp->SetupAttachment(BaseRoot);
-		newComp->SetRelativeLocation(FVector(i % ColumnCount * 100, i / ColumnCount * 100, 0.f));
-
-		mTilesArray.Add(newComp);
-	}
 	
-
+	RowCount = 4;//14;
+	ColumnCount = 3;// 15;
 }
 
 // Called when the game starts or when spawned
 void ATileMap::BeginPlay()
 {
-	Super::BeginPlay();
-	
+	Super::BeginPlay();	
 }
 
 void ATileMap::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	Super::EndPlay(EndPlayReason);
-
-	//for(size_t i = 0; i < mTilesArray.Num(); i++)
-	//{
-	//	mTilesArray[i]->Destroy();
-	//}
-
-	//mTilesArray.Empty();
 }
 
 // Called every frame
 void ATileMap::Tick( float DeltaTime )
 {
 	Super::Tick( DeltaTime );
-
-}
-
-void ATileMap::PostInitializeComponents()
-{
-	Super::PostInitializeComponents();
-	
-	//for(size_t i = 0; i < mTilesArray.Num(); i++)
-	//{
-	//	mTilesArray[i]->Destroy();
-	//}
-
-	//mTilesArray.Empty();
-
-	//mTilesArray.Reserve(RowCount* ColumnCount);
-
-	//for(size_t i = 0; i < RowCount*ColumnCount; i++)
-	//{
-	//	ATile *newTile = GetWorld()->SpawnActor<ATile>(FVector(0, 0, 0), FRotator::ZeroRotator);
-	//	newTile->SetActorLocation(FVector(i % ColumnCount * newTile->getSize().X, i / ColumnCount * newTile->getSize().Y, 0.f));
-
-	//	mTilesArray.Add(newTile);
-	//}
-
 }
 
 void ATileMap::OnConstruction(const FTransform& Transform)
 {
 	Super::OnConstruction(Transform);
 
-	//for(size_t i = 0; i < mTilesArray.Num(); i++)
-	//{
-	//	mTilesArray[i]->Destroy();
-	//}
+	RowCount = FPlatformMath::Max<int32>(1, RowCount);
+	ColumnCount = FPlatformMath::Max<int32>(1, ColumnCount);
 
-	//mTilesArray.Empty();
+	if(RowCount != mPreviousRowCount || ColumnCount != mPreviousColumnCount)
+	{
+		// create or destroy tiles to fill the grid
+		AdjustNumberOfTiles();
+		mPreviousRowCount = RowCount;
+		mPreviousColumnCount = ColumnCount;
+	}	
+}
 
-	//mTilesArray.Reserve(RowCount* ColumnCount);
+void ATileMap::Destroyed()
+{
+	Super::Destroyed();
 
+	for(ATile *Tile : mTilesArray)
+	{
+		if(Tile && Tile->IsValidLowLevel()) { Tile->Destroy(); }
+	}
+	mTilesArray.Empty();
+}
 
-	//for(size_t i = 0; i < RowCount*ColumnCount; i++)
-	//{
-	//	ATile *newTile = GetWorld()->SpawnActor<ATile>(FVector(0, 0, 0), FRotator::ZeroRotator);
-	//	newTile->SetActorLocation(FVector(i % ColumnCount * newTile->getSize().X, i / ColumnCount * newTile->getSize().Y, 0.f));
+void ATileMap::AdjustNumberOfTiles()
+{
+	int32 NewSize = ColumnCount * RowCount;
+	int32 OldSize = mPreviousRowCount * mPreviousColumnCount;
 
-	//	mTilesArray.Add(newTile);
-	//}
+	UPROPERTY() TArray<ATile*> NewTiles;
+	NewTiles.SetNum(NewSize, true);
 
-	
+	// create the new grid
+	for(int32 X = 0; X < ColumnCount; X++)
+	{
+		for(int32 Y = 0; Y < RowCount; Y++)
+		{
+			if(X < mPreviousColumnCount && Y < mPreviousRowCount)
+			{
+				NewTiles[Y * ColumnCount + X] = mTilesArray[Y * mPreviousColumnCount + X];
+				mTilesArray[Y * mPreviousColumnCount + X] = NULL; // all remaining pointers are destroyed later 
+			}
+			else
+			{
+				FActorSpawnParameters fp;
+				fp.bAllowDuringConstructionScript = true;
+				UPROPERTY() ATile *Tile = GetWorld()->SpawnActor<ATile>(ATile::StaticClass(), fp);
+				Tile->SetOwner(this);
+				GEditor->ParentActors(this, Tile, NAME_None);
+				
+
+				//set position
+				Tile->setMapPosition(X, Y);
+
+				FVector Position = GetActorLocation() + FVector(Tile->MapX * Tile::getSize().X, Tile->MapY * Tile::getSize().Y, 0.f);
+				Tile->SetActorLocation(Position);
+
+				NewTiles[Y * ColumnCount + X] = Tile;
+			}
+		}
+	}
+	// clean up the old grid, 
+	for(ATile *Tile : mTilesArray)
+	{
+		if(Tile) Tile->Destroy();
+	}
+
+	mTilesArray = NewTiles;
 }
