@@ -8,5 +8,8 @@ AXComClonePlayerController::AXComClonePlayerController()
 {
 	bShowMouseCursor = true;
 	DefaultMouseCursor = EMouseCursor::Default;
+	/* Enable mouse events */
+	bEnableClickEvents = true;
+	bEnableMouseOverEvents = true;
 }
 
