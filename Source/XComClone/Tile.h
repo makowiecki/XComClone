@@ -38,20 +38,32 @@ public:
 
 	void setMapPosition(int32 pX, int32 pY);
 
+	UFUNCTION()
+	void OnMouseClicked(UPrimitiveComponent* clickedComponent);
+
+	UFUNCTION()
+	void OnBeginMouseOver(UPrimitiveComponent* pComponent);
+
+	UFUNCTION()
+	void OnEndMouseOver(UPrimitiveComponent* pComponent);
+
 
 	FORCEINLINE class UStaticMeshComponent* GetMesh() const { return TileMesh; }
+	FORCEINLINE class UDecalComponent* GetTileIndicator() const { return TileIndicator; }
 
 private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Body, meta = (AllowPrivateAccess = "true"))
 	class UStaticMeshComponent *TileMesh;
 
-	//UFUNCTION()
-	//void Clicked();
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Body, meta = (AllowPrivateAccess = "true"))
+	class UDecalComponent *TileIndicator;
+
 
 	//UFUNCTION()
 	//void CursorOver();
 
 	//UFUNCTION() 
 	//void EndCursorOver();
+
 };
