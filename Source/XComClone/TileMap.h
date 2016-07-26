@@ -44,6 +44,8 @@ protected:
 	virtual void OnConstruction(const FTransform& Transform)override;
 
 	virtual void Destroyed() override;
+
+	virtual void PostInitializeComponents()override;
 	
 private:
 
@@ -56,5 +58,16 @@ private:
 	int32 mPreviousRowCount;
 	int32 mPreviousColumnCount;
 
+	ATile* mSelectedTile;
+
 	void AdjustNumberOfTiles();
+
+	UFUNCTION()
+	void OnTileClicked(ATile* tile);
+
+	UFUNCTION()
+	void OnBeginTileCursorOver(ATile* tile);
+
+	UFUNCTION()
+	void OnEndTileCursorOver(ATile* tile);
 };

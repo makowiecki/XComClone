@@ -3,6 +3,7 @@
 #include "XComClone.h"
 #include "TileMap.h"
 
+#include "Engine.h"
 #include "Editor.h"
 
 // Sets default values
@@ -17,8 +18,10 @@ ATileMap::ATileMap()
 	RootComponent = BaseRoot;
 
 	
-	RowCount = 4;//14;
-	ColumnCount = 3;// 15;
+	RowCount = 14;
+	ColumnCount = 15;
+
+	mSelectedTile = nullptr;
 }
 
 // Called when the game starts or when spawned
@@ -51,7 +54,7 @@ void ATileMap::OnConstruction(const FTransform& Transform)
 		AdjustNumberOfTiles();
 		mPreviousRowCount = RowCount;
 		mPreviousColumnCount = ColumnCount;
-	}	
+	}
 }
 
 void ATileMap::Destroyed()
@@ -63,6 +66,18 @@ void ATileMap::Destroyed()
 		if(Tile && Tile->IsValidLowLevel()) { Tile->Destroy(); }
 	}
 	mTilesArray.Empty();
+}
+
+void ATileMap::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+	for(ATile* Tile : mTilesArray)
+	{
+		Tile->OnTileClicked().AddUObject(this, &ATileMap::OnTileClicked);
+		Tile->OnBeginTileCursorOver().AddUObject(this, &ATileMap::OnBeginTileCursorOver);
+		Tile->OnEndTileCursorOver().AddUObject(this, &ATileMap::OnEndTileCursorOver);
+	}
 }
 
 void ATileMap::AdjustNumberOfTiles()
@@ -109,4 +124,42 @@ void ATileMap::AdjustNumberOfTiles()
 	}
 
 	mTilesArray = NewTiles;
+}
+
+void ATileMap::OnTileClicked(ATile* tile)
+{
+	if(tile)
+	{
+
+		mSelectedTile = tile;
+
+		//deselect all tiles except tile
+		for(ATile *Tile : mTilesArray)
+		{
+			if(Tile)
+			{
+				Tile->deactivate();
+
+			}
+		}
+		tile->activate();
+	}
+}
+
+void ATileMap::OnBeginTileCursorOver(ATile* tile)
+{
+	//if mSelected Tile then create path from selectedTile to tile
+	if(tile)
+	{
+
+	}
+}
+
+void ATileMap::OnEndTileCursorOver(ATile* tile)
+{
+	//if mSelected Tile then delete path from selectedTile to taile
+	if(tile)
+	{
+
+	}
 }
