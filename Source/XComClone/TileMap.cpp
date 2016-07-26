@@ -136,13 +136,15 @@ void ATileMap::OnTileClicked(ATile* tile)
 		//deselect all tiles except tile
 		for(ATile *Tile : mTilesArray)
 		{
-			if(Tile)
+			if(Tile && Tile->isActive())
 			{
 				Tile->deactivate();
 
 			}
 		}
-		tile->activate();
+		if(!tile->isActive()) { tile->activate(); }
+
+
 	}
 }
 
