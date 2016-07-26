@@ -47,6 +47,23 @@ public:
 	UFUNCTION()
 	void OnEndMouseOver(UPrimitiveComponent* pComponent);
 
+	bool isActive()const;
+
+	void activate();
+
+	void deactivate();
+
+	const FVector getCenterInWorldLocation()const;
+
+	DECLARE_EVENT_OneParam(ATile, FOnTileClicked, ATile*)
+	FOnTileClicked& OnTileClicked();
+
+	DECLARE_EVENT_OneParam(ATile, FOnBeginTileCursorOver, ATile*)
+	FOnBeginTileCursorOver& OnBeginTileCursorOver();
+
+	DECLARE_EVENT_OneParam(ATile, FOnEndTileCursorOver, ATile*)
+	FOnEndTileCursorOver& OnEndTileCursorOver();
+	
 
 	FORCEINLINE class UStaticMeshComponent* GetMesh() const { return TileMesh; }
 	FORCEINLINE class UDecalComponent* GetTileIndicator() const { return TileIndicator; }
@@ -59,11 +76,10 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Body, meta = (AllowPrivateAccess = "true"))
 	class UDecalComponent *TileIndicator;
 
+	bool bTileClicked;
 
-	//UFUNCTION()
-	//void CursorOver();
-
-	//UFUNCTION() 
-	//void EndCursorOver();
+	FOnTileClicked mTileClickedEvent;
+	FOnBeginTileCursorOver mBeginTileCursorOverEvent;
+	FOnEndTileCursorOver mEndTileCursorOverEvent;
 
 };

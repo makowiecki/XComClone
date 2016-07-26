@@ -31,8 +31,7 @@ ATile::ATile()
 	{
 		TileIndicator->SetDecalMaterial(TileIndicatorAsset.Object);
 	}
-
-	
+		
 	FScriptDelegate OnClickedDelegate;
 	OnClickedDelegate.BindUFunction(this, "OnMouseClicked");
 	TileMesh->OnClicked.Add(OnClickedDelegate);
@@ -47,6 +46,8 @@ ATile::ATile()
 
 
 	Cost = 1;
+
+	bTileClicked = false;
 	
 
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
@@ -81,8 +82,14 @@ void ATile::setMapPosition(int32 pX, int32 pY)
 
 void ATile::OnMouseClicked(UPrimitiveComponent * clickedComponent)
 {
-	FString msg = "Mouse clicked (" + FString::FromInt(MapX) + "; " + FString::FromInt(MapY) + ")";
-	GEngine->AddOnScreenDebugMessage(INDEX_NONE, 1.f, FColor::Red, msg, false);
+	//FString msg = "Mouse clicked (" + FString::FromInt(MapX) + "; " + FString::FromInt(MapY) + ")";
+	//GEngine->AddOnScreenDebugMessage(INDEX_NONE, 1.f, FColor::Red, msg, false);
+	//GEngine->AddOnScreenDebugMessage(INDEX_NONE, 1.f, FColor::Red, "Broadcast ontileclickedevent", false);
+
+	//bTileClicked = !bTileClicked;
+
+	mTileClickedEvent.Broadcast(this);
+	
 }
 
 void ATile::OnBeginMouseOver(UPrimitiveComponent* TouchedComponent)
@@ -90,11 +97,57 @@ void ATile::OnBeginMouseOver(UPrimitiveComponent* TouchedComponent)
 	//FString msg = "Mouse begin over (" + FString::FromInt(MapX) + "; " + FString::FromInt(MapY) + ")";
 	//GEngine->AddOnScreenDebugMessage(INDEX_NONE, 1.f, FColor::Red, msg, false);
 	TileIndicator->SetVisibility(true);
+
+	mBeginTileCursorOverEvent.Broadcast(this);
 }
 
 void ATile::OnEndMouseOver(UPrimitiveComponent * pComponent)
 {
 	//FString msg = "Mouse end over (" + FString::FromInt(MapX) + "; " + FString::FromInt(MapY) + ")";
 	//GEngine->AddOnScreenDebugMessage(INDEX_NONE, 1.f, FColor::Red, msg, false);
+	
+	if(!bTileClicked)
+	{
+		TileIndicator->SetVisibility(false);
+	}
+
+	mEndTileCursorOverEvent.Broadcast(this);
+}
+
+bool ATile::isActive() const
+{
+	return bTileClicked;
+}
+
+void ATile::activate()
+{
+	bTileClicked = true;
+	TileIndicator->SetVisibility(true);
+}
+
+void ATile::deactivate()
+{
+	bTileClicked = false;
 	TileIndicator->SetVisibility(false);
+}
+
+const FVector ATile::getCenterInWorldLocation() const
+{
+	FVector ret = GetActorLocation() + FVector(getSize().X / 2, getSize().Y / 2, 0.f);
+	return ret;
+}
+
+ATile::FOnTileClicked& ATile::OnTileClicked()
+{
+	return mTileClickedEvent;
+}
+
+ATile::FOnBeginTileCursorOver& ATile::OnBeginTileCursorOver()
+{
+	return mBeginTileCursorOverEvent;
+}
+
+ATile::FOnEndTileCursorOver& ATile::OnEndTileCursorOver()
+{
+	return mEndTileCursorOverEvent;
 }
