@@ -70,4 +70,7 @@ private:
 
 	UFUNCTION()
 	void OnEndTileCursorOver(ATile* tile);
+
+	void selectTile(ATile* tile);
+	void deselectTile();
 };

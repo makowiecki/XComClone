@@ -10,7 +10,7 @@
 ATileMap::ATileMap()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	//PrimaryActorTick.bCanEverTick = true;
+	//PrimaryActorTick.bCanEverTick = true;	
 
 	BaseRoot = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
 	BaseRoot->SetMobility(EComponentMobility::Static);
@@ -130,20 +130,15 @@ void ATileMap::OnTileClicked(ATile* tile)
 {
 	if(tile)
 	{
-
-		mSelectedTile = tile;
-
-		//deselect all tiles except tile
-		for(ATile *Tile : mTilesArray)
+		if(mSelectedTile == tile)
 		{
-			if(Tile && Tile->isActive())
-			{
-				Tile->deactivate();
-
-			}
+			deselectTile();
 		}
-		if(!tile->isActive()) { tile->activate(); }
-
+		else
+		{
+			deselectTile();
+			selectTile(tile);
+		}
 
 	}
 }
@@ -163,5 +158,23 @@ void ATileMap::OnEndTileCursorOver(ATile* tile)
 	if(tile)
 	{
 
+	}
+}
+
+void ATileMap::selectTile(ATile * tile)
+{
+	if(mSelectedTile != tile)
+	{
+		mSelectedTile = tile;
+		tile->activate();
+	}
+}
+
+void ATileMap::deselectTile()
+{
+	if(mSelectedTile)
+	{
+		mSelectedTile->deactivate();
+		mSelectedTile = nullptr;
 	}
 }
