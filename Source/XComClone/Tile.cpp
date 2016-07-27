@@ -10,15 +10,23 @@ ATile::ATile()
 {
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> TileMeshAsset(TEXT("StaticMesh'/Game/StarterContent/Architecture/Floor_100x100.Floor_100x100'"));
 	static ConstructorHelpers::FObjectFinder<UMaterial> TileIndicatorAsset(TEXT("Material'/Game/Materials/DecalTileIndicator.DecalTileIndicator'"));
-
+	
 	TileMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("TileMesh"));
 	TileMesh->SetupAttachment(RootComponent);
 	TileMesh->SetMobility(EComponentMobility::Static);
+	TileMesh->bGenerateOverlapEvents = true;
 		
 	if(TileMeshAsset.Succeeded())
 	{
 		TileMesh->SetStaticMesh(TileMeshAsset.Object);
 	}
+
+	BoxComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxComponent"));
+	BoxComponent->SetupAttachment(TileMesh);
+	BoxComponent->SetRelativeLocation(FVector(getSize().X / 2, getSize().Y / 2, 0.f));
+	BoxComponent->InitBoxExtent(FVector(getSize().X / 2, getSize().Y / 2, 0.f));
+	BoxComponent->bGenerateOverlapEvents = true;
+
 
 	TileIndicator = CreateDefaultSubobject<UDecalComponent>(TEXT("TileIndicator"));
 	TileIndicator->SetupAttachment(TileMesh);
@@ -43,12 +51,12 @@ ATile::ATile()
 	FScriptDelegate OnEndMouseOverDelegate;
 	OnEndMouseOverDelegate.BindUFunction(this, "OnEndMouseOver");
 	TileMesh->OnEndCursorOver.Add(OnEndMouseOverDelegate);
-
+		
 
 	Cost = 1;
 
 	bTileClicked = false;
-	
+
 
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	//PrimaryActorTick.bCanEverTick = true;
@@ -78,40 +86,6 @@ void ATile::setMapPosition(int32 pX, int32 pY)
 {
 	MapX = pX;
 	MapY = pY;
-}
-
-void ATile::OnMouseClicked(UPrimitiveComponent * clickedComponent)
-{
-	//FString msg = "Mouse clicked (" + FString::FromInt(MapX) + "; " + FString::FromInt(MapY) + ")";
-	//GEngine->AddOnScreenDebugMessage(INDEX_NONE, 1.f, FColor::Red, msg, false);
-	//GEngine->AddOnScreenDebugMessage(INDEX_NONE, 1.f, FColor::Red, "Broadcast ontileclickedevent", false);
-
-	//bTileClicked = !bTileClicked;
-
-	mTileClickedEvent.Broadcast(this);
-	
-}
-
-void ATile::OnBeginMouseOver(UPrimitiveComponent* TouchedComponent)
-{
-	//FString msg = "Mouse begin over (" + FString::FromInt(MapX) + "; " + FString::FromInt(MapY) + ")";
-	//GEngine->AddOnScreenDebugMessage(INDEX_NONE, 1.f, FColor::Red, msg, false);
-	TileIndicator->SetVisibility(true);
-
-	mBeginTileCursorOverEvent.Broadcast(this);
-}
-
-void ATile::OnEndMouseOver(UPrimitiveComponent * pComponent)
-{
-	//FString msg = "Mouse end over (" + FString::FromInt(MapX) + "; " + FString::FromInt(MapY) + ")";
-	//GEngine->AddOnScreenDebugMessage(INDEX_NONE, 1.f, FColor::Red, msg, false);
-	
-	if(!bTileClicked)
-	{
-		TileIndicator->SetVisibility(false);
-	}
-
-	mEndTileCursorOverEvent.Broadcast(this);
 }
 
 bool ATile::isActive() const
@@ -151,3 +125,46 @@ ATile::FOnEndTileCursorOver& ATile::OnEndTileCursorOver()
 {
 	return mEndTileCursorOverEvent;
 }
+
+void ATile::NotifyActorBeginOverlap(AActor* OtherActor)
+{
+	Super::NotifyActorBeginOverlap(OtherActor);
+
+}
+
+void ATile::OnMouseClicked(UPrimitiveComponent * clickedComponent)
+{
+
+	mTileClickedEvent.Broadcast(this);
+}
+
+void ATile::OnBeginMouseOver(UPrimitiveComponent* TouchedComponent)
+{
+	TileIndicator->SetVisibility(true);
+
+	mBeginTileCursorOverEvent.Broadcast(this);
+
+
+
+	//Dark tile 
+	//auto dynamic = TileMesh->CreateDynamicMaterialInstance(0);
+	//dynamic->SetVectorParameterValue(TEXT("Color"), FLinearColor(0.16f, 0.19f, 0.26f));
+	//TileMesh->SetMaterial(0, dynamic);
+}
+
+void ATile::OnEndMouseOver(UPrimitiveComponent * pComponent)
+{
+
+	if(!bTileClicked)
+	{
+		TileIndicator->SetVisibility(false);
+	}
+
+	mEndTileCursorOverEvent.Broadcast(this);
+
+	//Light tile
+	//auto dynamic = TileMesh->CreateDynamicMaterialInstance(0);
+	//dynamic->SetVectorParameterValue(TEXT("Color"), FLinearColor(0.26f, 0.32f, 0.38f));
+	//TileMesh->SetMaterial(0, dynamic);
+}
+

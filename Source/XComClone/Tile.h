@@ -37,16 +37,7 @@ public:
 	static const FVector getSize();
 
 	void setMapPosition(int32 pX, int32 pY);
-
-	UFUNCTION()
-	void OnMouseClicked(UPrimitiveComponent* clickedComponent);
-
-	UFUNCTION()
-	void OnBeginMouseOver(UPrimitiveComponent* pComponent);
-
-	UFUNCTION()
-	void OnEndMouseOver(UPrimitiveComponent* pComponent);
-
+	
 	bool isActive()const;
 
 	void activate();
@@ -64,14 +55,19 @@ public:
 	DECLARE_EVENT_OneParam(ATile, FOnEndTileCursorOver, ATile*)
 	FOnEndTileCursorOver& OnEndTileCursorOver();
 	
+	virtual void NotifyActorBeginOverlap(AActor* OtherActor)override;
 
 	FORCEINLINE class UStaticMeshComponent* GetMesh() const { return TileMesh; }
+	FORCEINLINE class UBoxComponent* GetBoxComponent() const { return BoxComponent; }
 	FORCEINLINE class UDecalComponent* GetTileIndicator() const { return TileIndicator; }
 
 private:
-
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Body, meta = (AllowPrivateAccess = "true"))
 	class UStaticMeshComponent *TileMesh;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Body, meta = (AllowPrivateAccess = "true"))
+	class UBoxComponent *BoxComponent;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Body, meta = (AllowPrivateAccess = "true"))
 	class UDecalComponent *TileIndicator;
@@ -82,4 +78,13 @@ private:
 	FOnBeginTileCursorOver mBeginTileCursorOverEvent;
 	FOnEndTileCursorOver mEndTileCursorOverEvent;
 
+
+	UFUNCTION()
+	void OnMouseClicked(UPrimitiveComponent* clickedComponent);
+
+	UFUNCTION()
+	void OnBeginMouseOver(UPrimitiveComponent* pComponent);
+
+	UFUNCTION()
+	void OnEndMouseOver(UPrimitiveComponent* pComponent);
 };
