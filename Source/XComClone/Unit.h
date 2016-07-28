@@ -3,6 +3,7 @@
 #pragma once
 
 #include "GameFramework/Character.h"
+#include "XComCloneTypes.h"
 #include "Unit.generated.h"
 
 UCLASS()
@@ -18,6 +19,9 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnyWhere, Category = "Gameplay")
 	int32 HealthPoints;
 
+	UPROPERTY(BlueprintReadWrite, EditAnyWhere, Category = "Gameplay")
+	EPlayerId PlayerId;
+
 	// Sets default values for this character's properties
 	AUnit();
 
@@ -31,6 +35,8 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* InputComponent) override;
 
 	void moveToLocation(const FVector& destination);
+
+	bool isAlly(const AUnit& unit)const;
 
 private:
 

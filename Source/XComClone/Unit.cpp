@@ -84,3 +84,7 @@ void AUnit::moveToLocation(const FVector & destination)
 	bIsMoving = true;
 }
 
+bool AUnit::isAlly(const AUnit& unit)const
+{
+	return PlayerId == unit.PlayerId;
+}
