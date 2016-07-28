@@ -161,7 +161,7 @@ void ATileMap::OnTileClicked(ATile* tile)
 			deselectTile();
 			selectTile(tile);
 		}
-		else
+		else if(tile->getUnitOnTile())
 		{
 			selectTile(tile);
 		}
@@ -174,7 +174,20 @@ void ATileMap::OnBeginTileCursorOver(ATile* tile)
 	//if mSelected Tile then create path from selectedTile to tile
 	if(tile)
 	{
-
+		if(mSelectedTile)
+		{
+			if(tile->getUnitOnTile())
+			{
+				if(tile->getUnitOnTile()->isAlly(*mSelectedTile->getUnitOnTile()))
+				{
+					tile->setTileMode(ETileMode::ALLY);
+				}
+				else
+				{
+					tile->setTileMode(ETileMode::ENEMY);
+				}
+			}
+		}
 	}
 }
 
