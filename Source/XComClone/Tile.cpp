@@ -2,6 +2,7 @@
 
 #include "XComClone.h"
 #include "Tile.h"
+#include "Unit.h"
 
 #include "Engine.h"
 
@@ -14,7 +15,6 @@ ATile::ATile()
 	TileMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("TileMesh"));
 	TileMesh->SetupAttachment(RootComponent);
 	TileMesh->SetMobility(EComponentMobility::Static);
-	TileMesh->bGenerateOverlapEvents = true;
 		
 	if(TileMeshAsset.Succeeded())
 	{
@@ -24,7 +24,7 @@ ATile::ATile()
 	BoxComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxComponent"));
 	BoxComponent->SetupAttachment(TileMesh);
 	BoxComponent->SetRelativeLocation(FVector(getSize().X / 2, getSize().Y / 2, 0.f));
-	BoxComponent->InitBoxExtent(FVector(getSize().X / 2, getSize().Y / 2, 0.f));
+	BoxComponent->InitBoxExtent(FVector(getSize().X / 2, getSize().Y / 2, 10.f));
 	BoxComponent->bGenerateOverlapEvents = true;
 
 
@@ -51,12 +51,13 @@ ATile::ATile()
 	FScriptDelegate OnEndMouseOverDelegate;
 	OnEndMouseOverDelegate.BindUFunction(this, "OnEndMouseOver");
 	TileMesh->OnEndCursorOver.Add(OnEndMouseOverDelegate);
-		
+	
+
 
 	Cost = 1;
 
 	bTileClicked = false;
-
+	mUnitOnTile = nullptr;
 
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	//PrimaryActorTick.bCanEverTick = true;
@@ -105,6 +106,11 @@ void ATile::deactivate()
 	TileIndicator->SetVisibility(false);
 }
 
+AUnit * ATile::getUnitOnTile() const
+{
+	return mUnitOnTile;
+}
+
 const FVector ATile::getCenterInWorldLocation() const
 {
 	FVector ret = GetActorLocation() + FVector(getSize().X / 2, getSize().Y / 2, 0.f);
@@ -129,6 +135,26 @@ ATile::FOnEndTileCursorOver& ATile::OnEndTileCursorOver()
 void ATile::NotifyActorBeginOverlap(AActor* OtherActor)
 {
 	Super::NotifyActorBeginOverlap(OtherActor);
+
+	AUnit* unit = Cast<AUnit>(OtherActor);
+
+	if(unit)
+	{
+		mUnitOnTile = unit;
+	}
+
+}
+
+void ATile::NotifyActorEndOverlap(AActor* OtherActor)
+{
+	Super::NotifyActorBeginOverlap(OtherActor);
+
+	AUnit* unit = Cast<AUnit>(OtherActor);
+
+	if(unit)
+	{
+		mUnitOnTile = nullptr;
+	}
 
 }
 

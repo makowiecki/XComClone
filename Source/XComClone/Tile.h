@@ -5,6 +5,8 @@
 #include "GameFramework/Actor.h"
 #include "Tile.generated.h"
 
+class AUnit;
+
 UCLASS()
 class XCOMCLONE_API ATile : public AActor
 {
@@ -44,6 +46,8 @@ public:
 
 	void deactivate();
 
+	AUnit* getUnitOnTile()const;
+
 	const FVector getCenterInWorldLocation()const;
 
 	DECLARE_EVENT_OneParam(ATile, FOnTileClicked, ATile*)
@@ -54,8 +58,9 @@ public:
 
 	DECLARE_EVENT_OneParam(ATile, FOnEndTileCursorOver, ATile*)
 	FOnEndTileCursorOver& OnEndTileCursorOver();
-	
+
 	virtual void NotifyActorBeginOverlap(AActor* OtherActor)override;
+	virtual void NotifyActorEndOverlap(AActor* OtherActor)override;
 
 	FORCEINLINE class UStaticMeshComponent* GetMesh() const { return TileMesh; }
 	FORCEINLINE class UBoxComponent* GetBoxComponent() const { return BoxComponent; }
@@ -77,6 +82,8 @@ private:
 	FOnTileClicked mTileClickedEvent;
 	FOnBeginTileCursorOver mBeginTileCursorOverEvent;
 	FOnEndTileCursorOver mEndTileCursorOverEvent;
+
+	AUnit* mUnitOnTile;
 
 
 	UFUNCTION()
