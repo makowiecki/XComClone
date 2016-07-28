@@ -3,9 +3,11 @@
 #pragma once
 
 #include "GameFramework/Actor.h"
+#include "XComCloneTypes.h"
 #include "Tile.generated.h"
 
 class AUnit;
+
 
 UCLASS()
 class XCOMCLONE_API ATile : public AActor
@@ -13,6 +15,7 @@ class XCOMCLONE_API ATile : public AActor
 	GENERATED_BODY()
 			
 public:	
+
 
 	/* Cost of moving into this tile*/
 	UPROPERTY(BlueprintReadWrite, EditAnyWhere, Category = "Tile")
@@ -26,6 +29,8 @@ public:
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Tile")
 	int32 MapY;
 
+	UPROPERTY(BlueprintReadWrite, EditAnyWhere, Category = "Tile")
+	ETileMode TileMode;
 
 	// Sets default values for this actor's properties
 	ATile();
@@ -48,6 +53,8 @@ public:
 
 	AUnit* getUnitOnTile()const;
 
+	void setTileMode(ETileMode mode);
+
 	const FVector getCenterInWorldLocation()const;
 
 	DECLARE_EVENT_OneParam(ATile, FOnTileClicked, ATile*)
@@ -61,6 +68,8 @@ public:
 
 	virtual void NotifyActorBeginOverlap(AActor* OtherActor)override;
 	virtual void NotifyActorEndOverlap(AActor* OtherActor)override;
+
+	virtual void PostInitializeComponents()override;
 
 	FORCEINLINE class UStaticMeshComponent* GetMesh() const { return TileMesh; }
 	FORCEINLINE class UBoxComponent* GetBoxComponent() const { return BoxComponent; }
@@ -77,7 +86,11 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Body, meta = (AllowPrivateAccess = "true"))
 	class UDecalComponent *TileIndicator;
 
+	UPROPERTY()
+	UMaterialInstanceDynamic *TileIndicatorMaterial;
+
 	bool bTileClicked;
+	bool bChangedTileMode;
 
 	FOnTileClicked mTileClickedEvent;
 	FOnBeginTileCursorOver mBeginTileCursorOverEvent;

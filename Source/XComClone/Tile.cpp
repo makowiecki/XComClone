@@ -57,10 +57,12 @@ ATile::ATile()
 	Cost = 1;
 
 	bTileClicked = false;
+	TileMode = ETileMode::EMPTY;
 	mUnitOnTile = nullptr;
 
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	//PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bStartWithTickEnabled = true;
 }
 
 // Called when the game starts or when spawned
@@ -75,6 +77,26 @@ void ATile::Tick( float DeltaTime )
 {
 	Super::Tick( DeltaTime );
 
+	if(bChangedTileMode)
+	{
+		bChangedTileMode = false;
+
+		switch(TileMode)
+		{
+			case ETileMode::EMPTY:
+				TileIndicatorMaterial->SetVectorParameterValue(FName(TEXT("Color")), FLinearColor(0.f, 0.f, 0.5f));
+				break;
+				break;
+			case ETileMode::ENEMY:
+				TileIndicatorMaterial->SetVectorParameterValue(FName(TEXT("Color")), FLinearColor(1.f, 0.f, 0.f));
+				break;
+			case ETileMode::ALLY:
+				TileIndicatorMaterial->SetVectorParameterValue(FName(TEXT("Color")), FLinearColor(0.f, 1.f, 0.f));
+				break;
+			default:
+				break;
+		}
+	}
 }
 
 const FVector ATile::getSize()
@@ -109,6 +131,15 @@ void ATile::deactivate()
 AUnit * ATile::getUnitOnTile() const
 {
 	return mUnitOnTile;
+}
+
+void ATile::setTileMode(ETileMode mode)
+{
+	if(TileMode != mode)
+	{
+		bChangedTileMode = true;
+		TileMode = mode;
+	}
 }
 
 const FVector ATile::getCenterInWorldLocation() const
@@ -158,6 +189,16 @@ void ATile::NotifyActorEndOverlap(AActor* OtherActor)
 
 }
 
+void ATile::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+	if(TileIndicator->GetDecalMaterial())
+	{
+		TileIndicatorMaterial = TileIndicator->CreateDynamicMaterialInstance();
+	}
+}
+
 void ATile::OnMouseClicked(UPrimitiveComponent * clickedComponent)
 {
 
@@ -166,7 +207,7 @@ void ATile::OnMouseClicked(UPrimitiveComponent * clickedComponent)
 
 void ATile::OnBeginMouseOver(UPrimitiveComponent* TouchedComponent)
 {
-	TileIndicator->SetVisibility(true);
+	TileIndicator->SetVisibility(TileMode == ETileMode::BLOCKED ? false : true);
 
 	mBeginTileCursorOverEvent.Broadcast(this);
 
@@ -184,6 +225,7 @@ void ATile::OnEndMouseOver(UPrimitiveComponent * pComponent)
 	if(!bTileClicked)
 	{
 		TileIndicator->SetVisibility(false);
+		setTileMode(ETileMode::EMPTY);
 	}
 
 	mEndTileCursorOverEvent.Broadcast(this);
