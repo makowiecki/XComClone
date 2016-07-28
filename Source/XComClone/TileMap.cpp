@@ -2,6 +2,7 @@
 
 #include "XComClone.h"
 #include "TileMap.h"
+#include "Unit.h"
 
 #include "Engine.h"
 #include "Editor.h"
@@ -134,9 +135,21 @@ void ATileMap::OnTileClicked(ATile* tile)
 		{
 			deselectTile();
 		}
+		else if(mSelectedTile)
+		{
+			AUnit* unitOnSelectedTile = mSelectedTile->getUnitOnTile();
+			if(unitOnSelectedTile)
+			{
+				unitOnSelectedTile->moveToLocation(tile->getCenterInWorldLocation());
+
+			}
+
+
+			deselectTile();
+			selectTile(tile);
+		}
 		else
 		{
-			deselectTile();
 			selectTile(tile);
 		}
 
