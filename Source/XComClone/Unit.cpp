@@ -19,7 +19,7 @@ AUnit::AUnit()
 	bUseControllerRotationRoll = false;
 
 	GetMesh()->SetRelativeLocationAndRotation(FVector(0.f, 0.f, -88.f), FRotator(0.f, -90.f, 0.f));
-	
+
 	if(SkeletalMeshAsset.Succeeded())
 	{
 		GetMesh()->SetSkeletalMesh(SkeletalMeshAsset.Object);
@@ -29,15 +29,18 @@ AUnit::AUnit()
 	{
 		GetMesh()->SetAnimInstanceClass(AnimClassAsset.Object->GetAnimBlueprintGeneratedClass());
 	}
-
 	
- 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+
+	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = true;
 
+	GetCharacterMovement()->MaxWalkSpeed = 350;
+
 	bIsMoving = false;
 
-
+	MovementRangeInTiles = 4;
+	HealthPoints = 100;
 }
 
 // Called when the game starts or when spawned
@@ -58,7 +61,7 @@ void AUnit::Tick( float DeltaTime )
 		moveVector.Normalize();
 		
 		AddMovementInput(moveVector, 1.f);
-		
+
 		actorFloorLocation.X = GetActorLocation().X;
 		actorFloorLocation.Y = GetActorLocation().Y;
 		if(FVector::PointsAreNear(actorFloorLocation, dstLocation, 1.f))

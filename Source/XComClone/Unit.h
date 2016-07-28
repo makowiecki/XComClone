@@ -11,6 +11,13 @@ class XCOMCLONE_API AUnit : public ACharacter
 	GENERATED_BODY()
 
 public:
+
+	UPROPERTY(BlueprintReadWrite, EditAnyWhere, Category = "Gameplay")
+	int32 MovementRangeInTiles;
+
+	UPROPERTY(BlueprintReadWrite, EditAnyWhere, Category = "Gameplay")
+	int32 HealthPoints;
+
 	// Sets default values for this character's properties
 	AUnit();
 
