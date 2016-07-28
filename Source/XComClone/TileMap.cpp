@@ -79,6 +79,16 @@ void ATileMap::PostInitializeComponents()
 		Tile->OnBeginTileCursorOver().AddUObject(this, &ATileMap::OnBeginTileCursorOver);
 		Tile->OnEndTileCursorOver().AddUObject(this, &ATileMap::OnEndTileCursorOver);
 	}
+
+	for(FConstPawnIterator it = GetWorld()->GetPawnIterator(); it; ++it)
+	{
+		AUnit *worldUnit = Cast<AUnit>(*it);
+
+		if(worldUnit)
+		{
+			//register evnets
+		}
+	}
 }
 
 void ATileMap::AdjustNumberOfTiles()
@@ -137,11 +147,14 @@ void ATileMap::OnTileClicked(ATile* tile)
 		}
 		else if(mSelectedTile)
 		{
-			AUnit* unitOnSelectedTile = mSelectedTile->getUnitOnTile();
-			if(unitOnSelectedTile)
+			if(!tile->getUnitOnTile())
 			{
-				unitOnSelectedTile->moveToLocation(tile->getCenterInWorldLocation());
+				AUnit* unitOnSelectedTile = mSelectedTile->getUnitOnTile();
+				if(unitOnSelectedTile)
+				{
+					unitOnSelectedTile->moveToLocation(tile->getCenterInWorldLocation());
 
+				}
 			}
 
 
