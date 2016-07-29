@@ -16,6 +16,11 @@ class XCOMCLONE_API AXComCloneGameMode : public AGameMode
 public:
 
 	AXComCloneGameMode();
+
+	virtual void InitGameState() override;
 	
-	
+private:
+
+	int32 MaxPlayerTurnPoints;
+
 };
