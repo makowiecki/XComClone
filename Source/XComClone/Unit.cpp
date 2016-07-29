@@ -67,6 +67,7 @@ void AUnit::Tick( float DeltaTime )
 		if(FVector::PointsAreNear(actorFloorLocation, dstLocation, 1.f))
 		{
 			bIsMoving = false;
+			mUnitMovementEndEvent.Broadcast(this);
 		}
 	}
 }
@@ -82,9 +83,20 @@ void AUnit::moveToLocation(const FVector & destination)
 {
 	dstLocation = destination;
 	bIsMoving = true;
+	mUnitMovementBeginEvent.Broadcast(this);
 }
 
 bool AUnit::isAlly(const AUnit& unit)const
 {
 	return PlayerId == unit.PlayerId;
+}
+
+AUnit::FOnUnitMovementBegin& AUnit::OnUnitMovementBegin()
+{
+	return mUnitMovementBeginEvent;
+}
+
+AUnit::FOnUnitMovementEnd& AUnit::OnUnitMovementEnd()
+{
+	return mUnitMovementEndEvent;
 }

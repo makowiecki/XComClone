@@ -35,8 +35,16 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* InputComponent) override;
 
 	void moveToLocation(const FVector& destination);
+	void moveToLocation(const TArray<FVector>& path);
 
 	bool isAlly(const AUnit& unit)const;
+
+
+	DECLARE_EVENT_OneParam(AUnit, FOnUnitMovementBegin, const AUnit*)
+	FOnUnitMovementBegin& OnUnitMovementBegin();
+
+	DECLARE_EVENT_OneParam(AUnit, FOnUnitMovementEnd, const AUnit*)
+	FOnUnitMovementEnd& OnUnitMovementEnd();
 
 private:
 
@@ -45,4 +53,6 @@ private:
 
 	bool bIsMoving;
 	
+	FOnUnitMovementBegin mUnitMovementBeginEvent;
+	FOnUnitMovementEnd mUnitMovementEndEvent;
 };
