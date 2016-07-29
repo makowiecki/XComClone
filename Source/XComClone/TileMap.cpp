@@ -3,6 +3,7 @@
 #include "XComClone.h"
 #include "TileMap.h"
 #include "Unit.h"
+#include "XComCloneGameState.h"
 
 #include "Engine.h"
 #include "Editor.h"
@@ -154,20 +155,33 @@ void ATileMap::OnTileClicked(ATile* tile)
 		{
 			if(tile->TileMode == ETileMode::EMPTY) //move to tile along path
 			{
-				AUnit* unitOnSelectedTile = mSelectedTile->getUnitOnTile();
-				if(unitOnSelectedTile)
-				{
-					unitOnSelectedTile->moveToLocation(tile->getCenterInWorldLocation());
+				TArray<ATile*> rangeTiles;
+				findTilesInUnitMovementRange(*mSelectedTile, rangeTiles);
 
+				if(rangeTiles.Contains(tile))
+				{
+					AUnit* unitOnSelectedTile = mSelectedTile->getUnitOnTile();
+					if(unitOnSelectedTile)
+					{
+						unitOnSelectedTile->moveToLocation(tile->getCenterInWorldLocation());
+
+					}
+
+					tile->setTileMode(ETileMode::ALLY);
+
+					deselectTile();
+					selectTile(tile);
 				}
 			}
 			else if(tile->TileMode == ETileMode::ENEMY) // mselecctertile unit attack tile unit
 			{
 
 			}
-
-			deselectTile();
-			selectTile(tile);
+			else if(tile->TileMode == ETileMode::ALLY)
+			{
+				deselectTile();
+				selectTile(tile);
+			}
 		}
 		else if(tile->getUnitOnTile())
 		{
@@ -197,14 +211,6 @@ void ATileMap::OnBeginTileCursorOver(ATile* tile)
 			{
 				if(tile->getUnitOnTile())
 				{
-					if(tile->getUnitOnTile()->isAlly(*mSelectedTile->getUnitOnTile()))
-					{
-						tile->setTileMode(ETileMode::ALLY);
-					}
-					else
-					{
-						tile->setTileMode(ETileMode::ENEMY);
-					}
 				}
 				else
 				{
@@ -254,16 +260,18 @@ void ATileMap::selectTile(ATile * tile)
 {
 	if(mSelectedTile != tile)
 	{
-		mSelectedTile = tile;
-		tile->activate();
-
-
-		TArray<ATile*> rangeTiles;
-		findTilesInUnitMovementRange(*tile, rangeTiles);
-
-		for(size_t i = 0; i < rangeTiles.Num(); i++)
+		if(tile->TileMode == ETileMode::ALLY)
 		{
-			rangeTiles[i]->setInMovementRangeTileColor();
+			TArray<ATile*> rangeTiles;
+			findTilesInUnitMovementRange(*tile, rangeTiles);
+
+			for(size_t i = 0; i < rangeTiles.Num(); i++)
+			{
+				rangeTiles[i]->setInMovementRangeTileColor();
+			}
+
+			tile->activate();
+			mSelectedTile = tile;
 		}
 	}
 }
