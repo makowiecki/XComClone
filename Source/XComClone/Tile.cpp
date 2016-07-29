@@ -76,7 +76,7 @@ void ATile::BeginPlay()
 void ATile::Tick( float DeltaTime )
 {
 	Super::Tick( DeltaTime );
-
+	
 	if(bChangedTileMode)
 	{
 		bChangedTileMode = false;
@@ -85,7 +85,6 @@ void ATile::Tick( float DeltaTime )
 		{
 			case ETileMode::EMPTY:
 				TileIndicatorMaterial->SetVectorParameterValue(FName(TEXT("Color")), FLinearColor(0.f, 0.f, 0.5f));
-				break;
 				break;
 			case ETileMode::ENEMY:
 				TileIndicatorMaterial->SetVectorParameterValue(FName(TEXT("Color")), FLinearColor(1.f, 0.f, 0.f));
@@ -139,6 +138,30 @@ void ATile::setTileMode(ETileMode mode)
 	{
 		bChangedTileMode = true;
 		TileMode = mode;
+	}
+}
+
+void ATile::setStandardTileColor()
+{
+	if(TileMeshMaterial)
+	{
+		TileMeshMaterial->SetVectorParameterValue(TEXT("Color"), FLinearColor(0.26f, 0.32f, 0.38f)); //todo: add UPROPERTY
+	}
+}
+
+void ATile::setInMovementRangeTileColor()
+{
+	if(TileMeshMaterial)
+	{
+		TileMeshMaterial->SetVectorParameterValue(TEXT("Color"), FLinearColor(0.16f, 0.19f, 0.26f)); //todo: add UPROPERTY
+	}
+}
+
+void ATile::setInFireRangeTileColor()
+{
+	if(TileMeshMaterial)
+	{
+		TileMeshMaterial->SetVectorParameterValue(TEXT("Color"), FLinearColor(0.42f, 0.20f, 0.21f)); //todo: add UPROPERTY
 	}
 }
 
@@ -196,6 +219,11 @@ void ATile::PostInitializeComponents()
 	if(TileIndicator->GetDecalMaterial())
 	{
 		TileIndicatorMaterial = TileIndicator->CreateDynamicMaterialInstance();
+	}
+
+	if(TileMesh->GetMaterial(0))
+	{
+		TileMeshMaterial = TileMesh->CreateDynamicMaterialInstance(0);
 	}
 }
 

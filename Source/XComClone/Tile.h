@@ -55,6 +55,12 @@ public:
 
 	void setTileMode(ETileMode mode);
 
+	void setStandardTileColor();
+
+	void setInMovementRangeTileColor();
+
+	void setInFireRangeTileColor();
+
 	const FVector getCenterInWorldLocation()const;
 
 	DECLARE_EVENT_OneParam(ATile, FOnTileClicked, ATile*)
@@ -85,6 +91,9 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Body, meta = (AllowPrivateAccess = "true"))
 	class UDecalComponent *TileIndicator;
+
+	UPROPERTY()
+	UMaterialInstanceDynamic *TileMeshMaterial;
 
 	UPROPERTY()
 	UMaterialInstanceDynamic *TileIndicatorMaterial;
