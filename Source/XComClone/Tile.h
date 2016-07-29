@@ -116,4 +116,7 @@ private:
 
 	UFUNCTION()
 	void OnEndMouseOver(UPrimitiveComponent* pComponent);
+	
+	UFUNCTION()
+	void OnTurnChanged(EPlayerId newPlayer);
 };

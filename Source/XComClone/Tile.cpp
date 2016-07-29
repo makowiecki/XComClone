@@ -3,6 +3,7 @@
 #include "XComClone.h"
 #include "Tile.h"
 #include "Unit.h"
+#include "XComCloneGameState.h"
 
 #include "Engine.h"
 
@@ -69,7 +70,13 @@ ATile::ATile()
 void ATile::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	AXComCloneGameState * const MyGameState = GetWorld()->GetGameState<AXComCloneGameState>();
+
+	if(MyGameState)
+	{
+		MyGameState->OnTurnChanged().AddUObject(this, &ATile::OnTurnChanged);
+	}
 }
 
 // Called every frame
@@ -77,6 +84,26 @@ void ATile::Tick( float DeltaTime )
 {
 	Super::Tick( DeltaTime );
 	
+	//{ DEBUG
+	//	switch(TileMode)
+	//	{
+	//		case ETileMode::EMPTY:
+	//			//TileMeshMaterial->SetVectorParameterValue(FName(TEXT("Color")), FLinearColor(0.f, 0.f, 0.5f));
+	//			break;
+	//		case ETileMode::BLOCKED:
+	//			TileMeshMaterial->SetVectorParameterValue(FName(TEXT("Color")), FLinearColor(0.f, 0.f, 0.f));
+	//			break;
+	//		case ETileMode::ENEMY:
+	//			TileMeshMaterial->SetVectorParameterValue(FName(TEXT("Color")), FLinearColor(1.f, 0.f, 0.f));
+	//			break;
+	//		case ETileMode::ALLY:
+	//			TileMeshMaterial->SetVectorParameterValue(FName(TEXT("Color")), FLinearColor(0.f, 1.f, 0.f));
+	//			break;
+	//		default:
+	//			break;
+	//	}
+	//}
+
 	if(bChangedTileMode)
 	{
 		bChangedTileMode = false;
@@ -134,7 +161,7 @@ AUnit * ATile::getUnitOnTile() const
 
 void ATile::setTileMode(ETileMode mode)
 {
-	if(TileMode != mode)
+	if(TileMode != mode && mode != ETileMode::BLOCKED)
 	{
 		bChangedTileMode = true;
 		TileMode = mode;
@@ -191,12 +218,24 @@ void ATile::NotifyActorBeginOverlap(AActor* OtherActor)
 	Super::NotifyActorBeginOverlap(OtherActor);
 
 	AUnit* unit = Cast<AUnit>(OtherActor);
+	AXComCloneGameState * const MyGameState = GetWorld()->GetGameState<AXComCloneGameState>();
 
 	if(unit)
 	{
 		mUnitOnTile = unit;
-	}
 
+		if(MyGameState)
+		{
+			if(MyGameState->isPlayerTurn(mUnitOnTile->PlayerId))
+			{
+				setTileMode(ETileMode::ALLY);
+			}
+			else
+			{
+				setTileMode(ETileMode::ENEMY);
+			}
+		}
+	}
 }
 
 void ATile::NotifyActorEndOverlap(AActor* OtherActor)
@@ -208,8 +247,9 @@ void ATile::NotifyActorEndOverlap(AActor* OtherActor)
 	if(unit)
 	{
 		mUnitOnTile = nullptr;
-	}
 
+		setTileMode(ETileMode::EMPTY);
+	}
 }
 
 void ATile::PostInitializeComponents()
@@ -238,13 +278,6 @@ void ATile::OnBeginMouseOver(UPrimitiveComponent* TouchedComponent)
 	TileIndicator->SetVisibility(TileMode == ETileMode::BLOCKED ? false : true);
 
 	mBeginTileCursorOverEvent.Broadcast(this);
-
-
-
-	//Dark tile 
-	//auto dynamic = TileMesh->CreateDynamicMaterialInstance(0);
-	//dynamic->SetVectorParameterValue(TEXT("Color"), FLinearColor(0.16f, 0.19f, 0.26f));
-	//TileMesh->SetMaterial(0, dynamic);
 }
 
 void ATile::OnEndMouseOver(UPrimitiveComponent * pComponent)
@@ -253,14 +286,23 @@ void ATile::OnEndMouseOver(UPrimitiveComponent * pComponent)
 	if(!bTileClicked)
 	{
 		TileIndicator->SetVisibility(false);
-		setTileMode(ETileMode::EMPTY);
 	}
 
 	mEndTileCursorOverEvent.Broadcast(this);
+}
 
-	//Light tile
-	//auto dynamic = TileMesh->CreateDynamicMaterialInstance(0);
-	//dynamic->SetVectorParameterValue(TEXT("Color"), FLinearColor(0.26f, 0.32f, 0.38f));
-	//TileMesh->SetMaterial(0, dynamic);
+void ATile::OnTurnChanged(EPlayerId newPlayer)
+{
+	if(mUnitOnTile)
+	{
+		if(mUnitOnTile->PlayerId == newPlayer)
+		{
+			setTileMode(ETileMode::ALLY);
+		}
+		else
+		{
+			setTileMode(ETileMode::ENEMY);
+		}
+	}
 }
 
