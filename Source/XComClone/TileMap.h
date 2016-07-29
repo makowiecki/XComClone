@@ -7,6 +7,8 @@
 #include "Tile.h"
 #include "TileMap.generated.h"
 
+class AUnit;
+
 
 UCLASS()
 class XCOMCLONE_API ATileMap : public AActor
@@ -60,6 +62,8 @@ private:
 
 	ATile* mSelectedTile;
 
+	bool bIsUnitMoving;
+
 	void AdjustNumberOfTiles();
 
 	UFUNCTION()
@@ -71,6 +75,16 @@ private:
 	UFUNCTION()
 	void OnEndTileCursorOver(ATile* tile);
 
+	UFUNCTION()
+	void OnUnitMovementBegin(const AUnit* unit);
+
+	UFUNCTION()
+	void OnUnitMovementEnd(const AUnit* unit);
+
 	void selectTile(ATile* tile);
 	void deselectTile();
+
+	void getTileNeighbours(const ATile& tile, TArray<ATile*>& outArray);
+
+	void findTilesInUnitMovementRange(ATile& tileContainingUnit, TArray<ATile*>& outArray);
 };
