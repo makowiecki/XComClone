@@ -30,6 +30,8 @@ void AXComCloneGameState::changeTurn()
 		CurrentPlayer = EPlayerId::PLAYER_1;
 	}
 
+	CurrentPlayerTurnPoints = MaxPlayerTurnPoints;
+
 	mTurnChangedEvent.Broadcast(CurrentPlayer);
 }
 
@@ -83,5 +85,5 @@ AXComCloneGameState::FOnTurnChanged & AXComCloneGameState::OnTurnChanged()
 
 void AXComCloneGameState::Tick(float DeltaSeconds)
 {
-	GEngine->AddOnScreenDebugMessage(1, 1.f, FColor::Green, FString("GameStateTick; Player turn: ") + FString(CurrentPlayer == EPlayerId::PLAYER_1 ? "PLAYER_1" : "PLAYER_2"));
+	//GEngine->AddOnScreenDebugMessage(1, 1.f, FColor::Green, FString("GameStateTick; Player turn: ") + FString(CurrentPlayer == EPlayerId::PLAYER_1 ? "PLAYER_1" : "PLAYER_2"));
 }
