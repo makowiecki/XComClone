@@ -26,6 +26,7 @@ ATileMap::ATileMap()
 	mSelectedTile = nullptr;
 
 	bIsUnitMoving = false;
+	bFoundPath = false;
 }
 
 // Called when the game starts or when spawned
@@ -145,79 +146,90 @@ void ATileMap::OnTileClicked(ATile* tile)
 {
 	if(bIsUnitMoving) { return; }
 
-	if(tile)
+	if(!tile) { return; }
+
+
+	if(mSelectedTile == tile)
 	{
-		if(mSelectedTile == tile)
+		deselectTile();
+	}
+	else if(mSelectedTile)
+	{
+		if(tile->TileMode == ETileMode::EMPTY) //move to tile along path
 		{
-			deselectTile();
-		}
-		else if(mSelectedTile)
-		{
-			if(tile->TileMode == ETileMode::EMPTY) //move to tile along path
-			{
-				TArray<ATile*> rangeTiles;
-				findTilesInUnitMovementRange(*mSelectedTile, rangeTiles);
+			TArray<ATile*> rangeTiles;
+			findTilesInRange(*mSelectedTile, rangeTiles, mSelectedTile->getUnitOnTile()->MovementRangeInTiles);
 
-				if(rangeTiles.Contains(tile))
+			if(rangeTiles.Contains(tile))
+			{
+				AUnit* unitOnSelectedTile = mSelectedTile->getUnitOnTile();
+				if(unitOnSelectedTile)
 				{
-					AUnit* unitOnSelectedTile = mSelectedTile->getUnitOnTile();
-					if(unitOnSelectedTile)
+					if(bFoundPath)
 					{
-						unitOnSelectedTile->moveToLocation(tile->getCenterInWorldLocation());
-
+						unitOnSelectedTile->moveToLocation(mPathSteps);
+						removePath();
 					}
-
-					tile->setTileMode(ETileMode::ALLY);
-
-					deselectTile();
-					selectTile(tile);
 				}
-			}
-			else if(tile->TileMode == ETileMode::ENEMY) // mselecctertile unit attack tile unit
-			{
 
-			}
-			else if(tile->TileMode == ETileMode::ALLY)
-			{
 				deselectTile();
 				selectTile(tile);
 			}
 		}
-		else if(tile->getUnitOnTile())
+		else if(tile->TileMode == ETileMode::ENEMY) // mSelectedTile unit attack tile unit
 		{
+
+		}
+		else if(tile->TileMode == ETileMode::ALLY)
+		{
+			deselectTile();
 			selectTile(tile);
 		}
-
+	}
+	else if(tile->getUnitOnTile())
+	{
+		selectTile(tile);
 	}
 }
-
 void ATileMap::OnBeginTileCursorOver(ATile* tile)
 {
 	//if mSelected Tile then create path from selectedTile to tile
-	if(tile)
-	{
-		if(bIsUnitMoving) 
-		{
-			tile->deactivate();
-			return; 
-		}
+	if(!tile) { return; }
 
-		if(mSelectedTile)
+	if(bIsUnitMoving)
+	{
+		tile->deactivate();
+		return;
+	}
+
+	if(mSelectedTile)
+	{
+		TArray<ATile*> rangeTiles;
+		findTilesInRange(*mSelectedTile, rangeTiles, mSelectedTile->getUnitOnTile()->MovementRangeInTiles);
+
+		if(rangeTiles.Contains(tile))
 		{
-			TArray<ATile*> rangeTiles;
-			findTilesInUnitMovementRange(*mSelectedTile, rangeTiles);
-			
-			if(rangeTiles.Contains(tile))
+			if(tile->getUnitOnTile())
 			{
-				if(tile->getUnitOnTile())
+
+			}
+			else
+			{
+				//find path
+				//draw path				
+				TArray<FVector> path;
+				bFoundPath = findPath(*tile, path);
+				if(bFoundPath)
 				{
-				}
-				else
-				{
-					//find path
-					//draw path
+					mPathSteps.Empty();
+					mPathSteps.Append(path);
+					drawPath();
 				}
 			}
+		}
+		else if(tile->TileMode != ETileMode::ALLY )
+		{
+			tile->deactivate();
 		}
 	}
 }
@@ -227,7 +239,9 @@ void ATileMap::OnEndTileCursorOver(ATile* tile)
 	//if mSelected Tile then delete path from selectedTile to taile
 	if(tile)
 	{
+		//bFoundPath = false; //tmp??
 
+		removePath();
 	}
 }
 
@@ -247,7 +261,8 @@ void ATileMap::OnUnitMovementEnd(const AUnit* unit)
 		mSelectedTile->setTileMode(ETileMode::ALLY);
 
 		TArray<ATile*> rangeTiles;
-		findTilesInUnitMovementRange(*mSelectedTile, rangeTiles);
+
+		findTilesInRange(*mSelectedTile, rangeTiles, mSelectedTile->getUnitOnTile()->MovementRangeInTiles);
 
 		for(size_t i = 0; i < rangeTiles.Num(); i++)
 		{
@@ -258,21 +273,26 @@ void ATileMap::OnUnitMovementEnd(const AUnit* unit)
 
 void ATileMap::selectTile(ATile * tile)
 {
-	if(mSelectedTile != tile)
+	if(mSelectedTile == tile) { return; }
+
+
+	if(tile->TileMode == ETileMode::ALLY)
 	{
-		if(tile->TileMode == ETileMode::ALLY)
+		TArray<ATile*> rangeTiles;
+		findTilesInRange(*tile, rangeTiles, tile->getUnitOnTile()->MovementRangeInTiles);
+
+		for(size_t i = 0; i < rangeTiles.Num(); i++)
 		{
-			TArray<ATile*> rangeTiles;
-			findTilesInUnitMovementRange(*tile, rangeTiles);
-
-			for(size_t i = 0; i < rangeTiles.Num(); i++)
-			{
-				rangeTiles[i]->setInMovementRangeTileColor();
-			}
-
-			tile->activate();
-			mSelectedTile = tile;
+			rangeTiles[i]->setInMovementRangeTileColor();
 		}
+
+		tile->activate();
+		mSelectedTile = tile;
+	}
+	else if(tile->TileMode == ETileMode::EMPTY)
+	{
+		tile->activate();
+		mSelectedTile = tile;
 	}
 }
 
@@ -281,8 +301,8 @@ void ATileMap::deselectTile()
 	if(mSelectedTile)
 	{
 		TArray<ATile*> rangeTiles;
-		findTilesInUnitMovementRange(*mSelectedTile, rangeTiles);
-
+		findTilesInRange(*mSelectedTile, rangeTiles, mSelectedTile->getUnitOnTile()->MovementRangeInTiles);
+		
 		for(size_t i = 0; i < rangeTiles.Num(); i++)
 		{
 			rangeTiles[i]->setStandardTileColor();
@@ -304,37 +324,36 @@ void ATileMap::getTileNeighbours(const ATile& tile, TArray<ATile*>& outArray)
 	if(tile.MapY + 1 < RowCount) { outArray.Add(mTilesArray[(tile.MapY + 1)*ColumnCount + tile.MapX]); }
 }
 
-void ATileMap::findTilesInUnitMovementRange(ATile& tileContainingUnit, TArray<ATile*>& outArray)
-{
-	if(!tileContainingUnit.getUnitOnTile()) { return; }
-
-	const int32 UnitRange = tileContainingUnit.getUnitOnTile()->MovementRangeInTiles;
-	
+void ATileMap::findTilesInRange(ATile& startTile, TArray<ATile*>& outArray, int32 range)
+{	
 	outArray.Empty();
-	outArray.Reserve(UnitRange * (2 * UnitRange + 2)); //max number of tiles in range
+	outArray.Reserve(range * (2 * range + 2)); //max number of tiles in range
 	
 	TQueue<ATile*> tileQueue;
 	TArray<ATile*> tileNeighbours;
 
-	tileQueue.Enqueue(&tileContainingUnit);
+	tileQueue.Enqueue(&startTile);
+	outArray.AddUnique(&startTile);
 	int32 queueSize = 1;
 	int32 AddedToQueue = 0;
 
-	for(size_t i = 0; i < UnitRange; i++)
+	for(size_t i = 0; i < range; i++)
 	{
-
 		for(size_t j = 0; j < queueSize; j++)
 		{
 			ATile* t;
 			tileQueue.Dequeue(t);
 
-			if(t->TileMode != ETileMode::BLOCKED)
-			{
-				getTileNeighbours(*t, tileNeighbours);
+			getTileNeighbours(*t, tileNeighbours);
 
-				for(size_t k = 0; k < tileNeighbours.Num(); k++, ++AddedToQueue)
+			for(size_t k = 0; k < tileNeighbours.Num(); k++)
+			{
+				if(tileNeighbours[k]->TileMode == ETileMode::EMPTY &&
+				   !outArray.Contains(tileNeighbours[k]))
 				{
 					tileQueue.Enqueue(tileNeighbours[k]);
+					++AddedToQueue;
+
 					outArray.AddUnique(tileNeighbours[k]);
 				}
 			}
@@ -343,4 +362,123 @@ void ATileMap::findTilesInUnitMovementRange(ATile& tileContainingUnit, TArray<AT
 		queueSize = AddedToQueue;
 		AddedToQueue = 0;
 	}
+}
+
+bool ATileMap::findPath(ATile& destination, TArray<FVector>& outArray)
+{
+	if(mSelectedTile == &destination) { return false; }
+
+	if(mSelectedTile)
+	{
+		if(!mSelectedTile->getUnitOnTile()) { return false; } //find path only if there are unit on selected tile
+	}
+
+	TArray<ATile*> selectedTileRange;
+	findTilesInRange(*mSelectedTile, selectedTileRange, mSelectedTile->getUnitOnTile()->MovementRangeInTiles);
+
+	if(!selectedTileRange.Contains(&destination)) { return false; } // find path only if destination is in movement range
+
+	outArray.Empty();
+
+	TQueue<ATile*> tileQueue;
+	TArray<ATile*> tileNeighbours;
+	TMap<ATile*, int32> pathValues;
+	ATile *tmp = &destination;
+
+	int32 queueSize = 1;
+	int32 AddedToQueue = 0;
+	int accualValue = 1;
+
+	tileQueue.Enqueue(tmp);
+	pathValues.Add(tmp, accualValue);
+	++accualValue;
+
+	bool findPath = true;
+	while(findPath)
+	{
+		for(size_t j = 0; j < queueSize; j++)
+		{
+			tileQueue.Dequeue(tmp);
+			getTileNeighbours(*tmp, tileNeighbours);
+
+			for(size_t i = 0; i < tileNeighbours.Num(); i++)
+			{
+				if(tileNeighbours[i] == mSelectedTile)
+				{
+					pathValues.Add(tileNeighbours[i], accualValue);
+
+					findPath = false; //mSelectedTile found, stop looking futher
+					j = queueSize; //ugly
+					break;
+				}
+
+				if(tileNeighbours[i]->TileMode == ETileMode::EMPTY &&
+				   selectedTileRange.Contains(tileNeighbours[i]) &&
+				   !pathValues.Contains(tileNeighbours[i]))
+				{
+					tileQueue.Enqueue(tileNeighbours[i]);
+					++AddedToQueue;
+
+					pathValues.Add(tileNeighbours[i], accualValue);
+				}
+			}
+		}
+		queueSize = AddedToQueue;
+		AddedToQueue = 0;
+		++accualValue;
+	}
+
+	accualValue -= 2; // because of the last incrementation
+	tmp = mSelectedTile;
+
+	while(accualValue != 0)
+	{
+		getTileNeighbours(*tmp, tileNeighbours);
+		
+		size_t i;
+		for(i = 0; i < tileNeighbours.Num(); i++)
+		{
+			int32 *result = pathValues.Find(tileNeighbours[i]);
+
+			if(result && *result == accualValue)
+			{
+				break;
+			}
+
+		}
+
+		outArray.Add(tileNeighbours[i]->getCenterInWorldLocation());
+		tmp = tileNeighbours[i];
+		--accualValue;
+	}
+
+	return true;
+}
+
+void ATileMap::drawPath()
+{
+	if(bFoundPath && mSelectedTile && mPathSteps.Num() > 0)
+	{
+		UPROPERTY() AMyCableActor *cable = GetWorld()->SpawnActor<AMyCableActor>(mSelectedTile->getCenterInWorldLocation(), FRotator::ZeroRotator);
+		cable->CableComponent->EndLocation = mPathSteps[0] - mSelectedTile->getCenterInWorldLocation();
+		cable->SetOwner(this);
+		mPathArray.Add(cable);
+
+		for(size_t i = 0; i < mPathSteps.Num() - 1; i++)
+		{
+			UPROPERTY() AMyCableActor *cable = GetWorld()->SpawnActor<AMyCableActor>(mPathSteps[i], FRotator::ZeroRotator);
+			cable->CableComponent->EndLocation = mPathSteps[i + 1] - mPathSteps[i];
+			cable->SetOwner(this);
+			mPathArray.Add(cable);
+		}
+	}
+}
+
+void ATileMap::removePath()
+{
+	for(AMyCableActor *cable : mPathArray)
+	{
+		if(cable && cable->IsValidLowLevel()) { cable->Destroy(); }
+	}
+	mPathArray.Empty();
 }

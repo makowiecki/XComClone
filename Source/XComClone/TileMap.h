@@ -5,6 +5,7 @@
 #include "GameFramework/Actor.h"
 #include "Array.h"
 #include "Tile.h"
+#include "MyCableActor.h"
 #include "TileMap.generated.h"
 
 class AUnit;
@@ -57,6 +58,13 @@ private:
 	UPROPERTY()
 	TArray<ATile*>	mTilesArray;
 
+	UPROPERTY()
+	TArray<AMyCableActor*> mPathArray;
+
+	TArray<FVector> mPathSteps;
+
+	bool bFoundPath;
+
 	int32 mPreviousRowCount;
 	int32 mPreviousColumnCount;
 
@@ -86,5 +94,11 @@ private:
 
 	void getTileNeighbours(const ATile& tile, TArray<ATile*>& outArray);
 
-	void findTilesInUnitMovementRange(ATile& tileContainingUnit, TArray<ATile*>& outArray);
+	void findTilesInRange(ATile& startTile, TArray<ATile*>& outArray, int32 range);
+
+	bool findPath(ATile& destination, TArray<FVector>& outArray);
+
+	void drawPath();
+
+	void removePath();
 };
