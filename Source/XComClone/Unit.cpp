@@ -36,11 +36,14 @@ AUnit::AUnit()
 	PrimaryActorTick.bStartWithTickEnabled = true;
 
 	GetCharacterMovement()->MaxWalkSpeed = 350;
+	GetCharacterMovement()->bOrientRotationToMovement = true;
 
 	bIsMoving = false;
 
 	MovementRangeInTiles = 4;
 	HealthPoints = 100;
+
+	
 }
 
 // Called when the game starts or when spawned
