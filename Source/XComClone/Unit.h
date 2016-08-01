@@ -33,8 +33,7 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* InputComponent) override;
-
-	void moveToLocation(const FVector& destination);
+		
 	void moveToLocation(const TArray<FVector>& path);
 
 	bool isAlly(const AUnit& unit)const;
@@ -48,8 +47,8 @@ public:
 
 private:
 
-	//TArray<FVector> mPathLocations;
-	FVector dstLocation;//tmp
+	TArray<FVector> mPathLocations;
+	int32 mCurrentIndex;
 
 	bool bIsMoving;
 	

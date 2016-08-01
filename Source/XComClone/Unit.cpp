@@ -60,17 +60,23 @@ void AUnit::Tick( float DeltaTime )
 	if(bIsMoving)
 	{		
 		FVector actorFloorLocation(GetActorLocation().X, GetActorLocation().Y, 0.f);
-		FVector moveVector = dstLocation - actorFloorLocation;
+		FVector moveVector = mPathLocations[mCurrentIndex] - actorFloorLocation;
 		moveVector.Normalize();
 		
 		AddMovementInput(moveVector, 1.f);
 
 		actorFloorLocation.X = GetActorLocation().X;
 		actorFloorLocation.Y = GetActorLocation().Y;
-		if(FVector::PointsAreNear(actorFloorLocation, dstLocation, 1.f))
+
+		if(FVector::PointsAreNear(actorFloorLocation, mPathLocations[mCurrentIndex], 5.f))
 		{
-			bIsMoving = false;
-			mUnitMovementEndEvent.Broadcast(this);
+			++mCurrentIndex;
+
+			if(mCurrentIndex == mPathLocations.Num())
+			{
+				bIsMoving = false;
+				mUnitMovementEndEvent.Broadcast(this);
+			}
 		}
 	}
 }
@@ -82,10 +88,13 @@ void AUnit::SetupPlayerInputComponent(class UInputComponent* InputComponent)
 
 }
 
-void AUnit::moveToLocation(const FVector & destination)
+void AUnit::moveToLocation(const TArray<FVector>& path)
 {
-	dstLocation = destination;
+	mPathLocations.Empty();
+	mPathLocations.Append(path);
+	mCurrentIndex = 0;
 	bIsMoving = true;
+
 	mUnitMovementBeginEvent.Broadcast(this);
 }
 
