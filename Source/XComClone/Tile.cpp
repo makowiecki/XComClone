@@ -161,7 +161,7 @@ AUnit * ATile::getUnitOnTile() const
 
 void ATile::setTileMode(ETileMode mode)
 {
-	if(TileMode != mode && mode != ETileMode::BLOCKED)
+	if(TileMode != mode && TileMode != ETileMode::BLOCKED) //don't change tile mode if it is blocked
 	{
 		bChangedTileMode = true;
 		TileMode = mode;
@@ -220,7 +220,7 @@ void ATile::NotifyActorBeginOverlap(AActor* OtherActor)
 	AUnit* unit = Cast<AUnit>(OtherActor);
 	AXComCloneGameState * const MyGameState = GetWorld()->GetGameState<AXComCloneGameState>();
 
-	if(unit)
+	if(unit && !mUnitOnTile)
 	{
 		mUnitOnTile = unit;
 
@@ -240,11 +240,11 @@ void ATile::NotifyActorBeginOverlap(AActor* OtherActor)
 
 void ATile::NotifyActorEndOverlap(AActor* OtherActor)
 {
-	Super::NotifyActorBeginOverlap(OtherActor);
+	Super::NotifyActorEndOverlap(OtherActor);
 
 	AUnit* unit = Cast<AUnit>(OtherActor);
 
-	if(unit)
+	if(unit && unit == mUnitOnTile)
 	{
 		mUnitOnTile = nullptr;
 
