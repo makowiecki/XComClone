@@ -6,6 +6,8 @@
 #include "XComCloneTypes.h"
 #include "Unit.generated.h"
 
+class AWeapon;
+
 UCLASS()
 class XCOMCLONE_API AUnit : public ACharacter
 {
@@ -21,6 +23,12 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, EditAnyWhere, Category = "Gameplay")
 	EPlayerId PlayerId;
+
+	UPROPERTY(BlueprintReadWrite, EditAnyWhere, Category = "Gameplay")
+	EUnitState UnitState;
+
+	UPROPERTY(BlueprintReadWrite, EditAnyWhere, Category = "Weapon")
+	TSubclassOf<AWeapon> PrimaryWeapon;
 
 	// Sets default values for this character's properties
 	AUnit();
@@ -38,6 +46,9 @@ public:
 
 	bool isAlly(const AUnit& unit)const;
 
+	void attack(AUnit& otherUnit);
+
+	int32 getUnitRange()const;
 
 	DECLARE_EVENT_OneParam(AUnit, FOnUnitMovementBegin, const AUnit*)
 	FOnUnitMovementBegin& OnUnitMovementBegin();

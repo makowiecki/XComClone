@@ -43,7 +43,7 @@ AUnit::AUnit()
 	MovementRangeInTiles = 4;
 	HealthPoints = 100;
 
-	
+	UnitState = EUnitState::MOVING;
 }
 
 // Called when the game starts or when spawned
@@ -101,6 +101,30 @@ void AUnit::moveToLocation(const TArray<FVector>& path)
 bool AUnit::isAlly(const AUnit& unit)const
 {
 	return PlayerId == unit.PlayerId;
+}
+
+void AUnit::attack(AUnit & otherUnit)
+{
+	//raycast check ??
+
+
+
+	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Blue, FString("Attack: ") + GetName() + FString(" -> ") + otherUnit.GetName());
+}
+
+int32 AUnit::getUnitRange() const
+{
+	int32 retVal = 0;
+	if(UnitState == EUnitState::MOVING)
+	{
+		retVal = MovementRangeInTiles;
+	}
+	else if(UnitState == EUnitState::ATTACKING)
+	{
+		retVal = 5; //TMP, change when wepaon will be add
+	}
+
+	return retVal;
 }
 
 AUnit::FOnUnitMovementBegin& AUnit::OnUnitMovementBegin()
