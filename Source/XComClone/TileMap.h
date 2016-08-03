@@ -94,7 +94,7 @@ private:
 
 	void getTileNeighbours(const ATile& tile, TArray<ATile*>& outArray);
 
-	void findTilesInRange(ATile& startTile, TArray<ATile*>& outArray, int32 range);
+	void findTilesInRange(ATile& startTile, TArray<ATile*>& outArray, int32 range, bool addEnemyTileToRange);
 
 	bool findPath(ATile& destination, TArray<FVector>& outArray);
 

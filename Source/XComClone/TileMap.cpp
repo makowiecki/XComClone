@@ -155,10 +155,11 @@ void ATileMap::OnTileClicked(ATile* tile)
 	}
 	else if(mSelectedTile)
 	{
-		if(tile->TileMode == ETileMode::EMPTY) //move to tile along path
+		if(tile->TileMode == ETileMode::EMPTY &&
+		   mSelectedTile->getUnitOnTile()->UnitState == EUnitState::MOVING) //move to tile along path
 		{
 			TArray<ATile*> rangeTiles;
-			findTilesInRange(*mSelectedTile, rangeTiles, mSelectedTile->getUnitOnTile()->MovementRangeInTiles);
+			findTilesInRange(*mSelectedTile, rangeTiles, mSelectedTile->getUnitOnTile()->getUnitRange(), false);
 
 			if(rangeTiles.Contains(tile))
 			{
@@ -176,9 +177,16 @@ void ATileMap::OnTileClicked(ATile* tile)
 				selectTile(tile);
 			}
 		}
-		else if(tile->TileMode == ETileMode::ENEMY) // mSelectedTile unit attack tile unit
+		else if(tile->TileMode == ETileMode::ENEMY &&
+				mSelectedTile->getUnitOnTile()->UnitState == EUnitState::ATTACKING) // mSelectedTile unit attack tile unit
 		{
+			TArray<ATile*> rangeTiles;
+			findTilesInRange(*mSelectedTile, rangeTiles, mSelectedTile->getUnitOnTile()->getUnitRange(), true);
 
+			if(rangeTiles.Contains(tile))
+			{
+				mSelectedTile->getUnitOnTile()->attack(*tile->getUnitOnTile());
+			}
 		}
 		else if(tile->TileMode == ETileMode::ALLY)
 		{
@@ -205,18 +213,16 @@ void ATileMap::OnBeginTileCursorOver(ATile* tile)
 	if(mSelectedTile)
 	{
 		TArray<ATile*> rangeTiles;
-		findTilesInRange(*mSelectedTile, rangeTiles, mSelectedTile->getUnitOnTile()->MovementRangeInTiles);
+		findTilesInRange(*mSelectedTile, rangeTiles, mSelectedTile->getUnitOnTile()->getUnitRange(), mSelectedTile->getUnitOnTile()->UnitState == EUnitState::ATTACKING ? true : false); //if attacking add enemy tiles to range
 
 		if(rangeTiles.Contains(tile))
 		{
-			if(tile->getUnitOnTile())
+			/*if(tile->getUnitOnTile())
 			{
-
 			}
-			else
-			{
-				//find path
-				//draw path				
+			else*/
+			if(mSelectedTile->getUnitOnTile()->UnitState == EUnitState::MOVING)
+			{			
 				TArray<FVector> path;
 				bFoundPath = findPath(*tile, path);
 				if(bFoundPath)
@@ -224,6 +230,14 @@ void ATileMap::OnBeginTileCursorOver(ATile* tile)
 					mPathSteps.Empty();
 					mPathSteps.Append(path);
 					drawPath();
+				}
+			}
+			else if(mSelectedTile->getUnitOnTile()->UnitState == EUnitState::ATTACKING)
+			{
+				if(tile->TileMode != ETileMode::ENEMY &&
+				   mSelectedTile != tile)
+				{
+					tile->deactivate();
 				}
 			}
 		}
@@ -262,11 +276,18 @@ void ATileMap::OnUnitMovementEnd(const AUnit* unit)
 
 		TArray<ATile*> rangeTiles;
 
-		findTilesInRange(*mSelectedTile, rangeTiles, mSelectedTile->getUnitOnTile()->MovementRangeInTiles);
+		findTilesInRange(*mSelectedTile, rangeTiles, mSelectedTile->getUnitOnTile()->getUnitRange(), mSelectedTile->getUnitOnTile()->UnitState == EUnitState::ATTACKING ? true : false);
 
 		for(size_t i = 0; i < rangeTiles.Num(); i++)
 		{
-			rangeTiles[i]->setInMovementRangeTileColor();
+			if(mSelectedTile->getUnitOnTile()->UnitState == EUnitState::MOVING)
+			{
+				rangeTiles[i]->setInMovementRangeTileColor();
+			}
+			else if(mSelectedTile->getUnitOnTile()->UnitState == EUnitState::ATTACKING)
+			{
+				rangeTiles[i]->setInFireRangeTileColor();
+			}
 		}
 	}
 }
@@ -279,11 +300,18 @@ void ATileMap::selectTile(ATile * tile)
 	if(tile->TileMode == ETileMode::ALLY)
 	{
 		TArray<ATile*> rangeTiles;
-		findTilesInRange(*tile, rangeTiles, tile->getUnitOnTile()->MovementRangeInTiles);
+		findTilesInRange(*tile, rangeTiles, tile->getUnitOnTile()->getUnitRange(), tile->getUnitOnTile()->UnitState == EUnitState::ATTACKING ? true : false);
 
 		for(size_t i = 0; i < rangeTiles.Num(); i++)
 		{
-			rangeTiles[i]->setInMovementRangeTileColor();
+			if(tile->getUnitOnTile()->UnitState == EUnitState::MOVING)
+			{
+				rangeTiles[i]->setInMovementRangeTileColor();
+			}
+			else if(tile->getUnitOnTile()->UnitState == EUnitState::ATTACKING)
+			{
+				rangeTiles[i]->setInFireRangeTileColor();
+			}
 		}
 
 		tile->activate();
@@ -301,7 +329,7 @@ void ATileMap::deselectTile()
 	if(mSelectedTile)
 	{
 		TArray<ATile*> rangeTiles;
-		findTilesInRange(*mSelectedTile, rangeTiles, mSelectedTile->getUnitOnTile()->MovementRangeInTiles);
+		findTilesInRange(*mSelectedTile, rangeTiles, mSelectedTile->getUnitOnTile()->getUnitRange(), mSelectedTile->getUnitOnTile()->UnitState == EUnitState::ATTACKING ? true : false);
 		
 		for(size_t i = 0; i < rangeTiles.Num(); i++)
 		{
@@ -324,13 +352,15 @@ void ATileMap::getTileNeighbours(const ATile& tile, TArray<ATile*>& outArray)
 	if(tile.MapY + 1 < RowCount) { outArray.Add(mTilesArray[(tile.MapY + 1)*ColumnCount + tile.MapX]); }
 }
 
-void ATileMap::findTilesInRange(ATile& startTile, TArray<ATile*>& outArray, int32 range)
+void ATileMap::findTilesInRange(ATile& startTile, TArray<ATile*>& outArray, int32 range, bool addEnemyTileToRange)
 {	
 	outArray.Empty();
 	outArray.Reserve(range * (2 * range + 2)); //max number of tiles in range
 	
 	TQueue<ATile*> tileQueue;
 	TArray<ATile*> tileNeighbours;
+
+	ETileMode extraCheck = addEnemyTileToRange ? ETileMode::ENEMY : ETileMode::EMPTY;
 
 	tileQueue.Enqueue(&startTile);
 	outArray.AddUnique(&startTile);
@@ -348,7 +378,7 @@ void ATileMap::findTilesInRange(ATile& startTile, TArray<ATile*>& outArray, int3
 
 			for(size_t k = 0; k < tileNeighbours.Num(); k++)
 			{
-				if(tileNeighbours[k]->TileMode == ETileMode::EMPTY &&
+				if((tileNeighbours[k]->TileMode == ETileMode::EMPTY || tileNeighbours[k]->TileMode == extraCheck) &&
 				   !outArray.Contains(tileNeighbours[k]))
 				{
 					tileQueue.Enqueue(tileNeighbours[k]);
@@ -374,7 +404,7 @@ bool ATileMap::findPath(ATile& destination, TArray<FVector>& outArray)
 	}
 
 	TArray<ATile*> selectedTileRange;
-	findTilesInRange(*mSelectedTile, selectedTileRange, mSelectedTile->getUnitOnTile()->MovementRangeInTiles);
+	findTilesInRange(*mSelectedTile, selectedTileRange, mSelectedTile->getUnitOnTile()->MovementRangeInTiles, false); //for pathfinding we need movement range and no enemy tiles
 
 	if(!selectedTileRange.Contains(&destination)) { return false; } // find path only if destination is in movement range
 
