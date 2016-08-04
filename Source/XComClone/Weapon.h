@@ -27,8 +27,13 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnyWhere, Category = "Weapon")
 	int32 BulletsInOneShot;
 
+	UPROPERTY(BlueprintReadWrite, EditAnyWhere, Category = "Weapon")
+	bool FireDamage;
+
 	// Sets default values for this actor's properties
 	AWeapon();
+
+	virtual ~AWeapon() {};
 
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -41,4 +46,18 @@ public:
 	virtual bool isUsingFireDamage();
 
 	//virtual class UTexture2D* getWeaponTexture();
+
+
+	FORCEINLINE class USceneComponent* GetBaseRoot() const { return BaseRoot; }
+
+	FORCEINLINE class UStaticMeshComponent* GetWeaponMesh() const { return WeaponMesh; }
+
+protected:
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Body, meta = (AllowPrivateAccess = "true"))
+	class USceneComponent* BaseRoot;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Body, meta = (AllowPrivateAccess = "true"))
+	class UStaticMeshComponent *WeaponMesh;
+
 };
