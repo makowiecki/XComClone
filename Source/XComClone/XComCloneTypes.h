@@ -12,6 +12,13 @@ enum class ETileMode: uint8
 };
 
 UENUM()
+enum class EUnitState: uint8
+{
+	MOVING UMETA(DisplayName = "MOVING"),
+	ATTACKING UMETA(DisplayName = "ATTACKING")
+};
+
+UENUM()
 enum class EPlayerId: uint8
 {
 	PLAYER_1 UMETA(DisplayName = "PLAYER 1"),
