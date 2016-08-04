@@ -46,7 +46,8 @@ private:
 	int32 CurrentPlayerTurnPoints;
 	int32 MaxPlayerTurnPoints;
 
-	int8 PlayerUnitsCounter[2];
+	//int8 PlayerUnitsCounter[2];
+	TStaticArray<int8, 2> PlayerUnitsCounter;
 
 	FOnTurnChanged mTurnChangedEvent;
 };

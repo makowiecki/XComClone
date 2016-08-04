@@ -52,15 +52,9 @@ int32 AXComCloneGameState::GetCurrentPlayerTurnPoints()const
 
 void AXComCloneGameState::setInitPlayersUnits(int8 value)
 {
-	if(value > 0)
+	for(size_t i = 0; i < PlayerUnitsCounter.Num(); i++)
 	{
-		PlayerUnitsCounter[0] = value;
-		PlayerUnitsCounter[1] = value;
-	}
-	else
-	{
-		PlayerUnitsCounter[0] = 0;
-		PlayerUnitsCounter[1] = 0;
+		PlayerUnitsCounter[i] = value > 0 ? value : 0;
 	}
 }
 
