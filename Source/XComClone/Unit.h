@@ -30,12 +30,14 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnyWhere, Category = "Weapon")
 	TSubclassOf<AWeapon> PrimaryWeapon;
 
+	UPROPERTY(BlueprintReadWrite, EditAnyWhere, Category = "Weapon")
+	FVector PrimaryWeaponOffset;
+
 	// Sets default values for this character's properties
 	AUnit();
 
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-	
+	virtual void OnConstruction(const FTransform& Transform) override;
+
 	// Called every frame
 	virtual void Tick( float DeltaSeconds ) override;
 
@@ -56,7 +58,12 @@ public:
 	DECLARE_EVENT_OneParam(AUnit, FOnUnitMovementEnd, const AUnit*)
 	FOnUnitMovementEnd& OnUnitMovementEnd();
 
+	FORCEINLINE class UChildActorComponent* GetWeaponActorComponent() const { return WeaponActorComponent; }
+
 private:
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Body, meta = (AllowPrivateAccess = "true"))
+	class UChildActorComponent *WeaponActorComponent;
 
 	TArray<FVector> mPathLocations;
 	int32 mCurrentIndex;

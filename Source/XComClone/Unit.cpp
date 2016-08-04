@@ -2,6 +2,7 @@
 
 #include "XComClone.h"
 #include "Unit.h"
+#include "Weapon.h"
 
 
 // Sets default values
@@ -30,6 +31,12 @@ AUnit::AUnit()
 		GetMesh()->SetAnimInstanceClass(AnimClassAsset.Object->GetAnimBlueprintGeneratedClass());
 	}
 	
+	WeaponActorComponent = CreateDefaultSubobject<UChildActorComponent>(TEXT("WeaponActorComponent"));
+	WeaponActorComponent->SetupAttachment(GetCapsuleComponent());
+	WeaponActorComponent->SetChildActorClass(PrimaryWeapon);
+	WeaponActorComponent->SetRelativeLocation(PrimaryWeaponOffset);
+
+	PrimaryWeaponOffset.Set(0.f, 20.f, 20.f);
 
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -44,12 +51,20 @@ AUnit::AUnit()
 	HealthPoints = 100;
 
 	UnitState = EUnitState::MOVING;
+
 }
 
-// Called when the game starts or when spawned
-void AUnit::BeginPlay()
+
+void AUnit::OnConstruction(const FTransform& Transform)
 {
-	Super::BeginPlay();
+	Super::OnConstruction(Transform);
+
+	WeaponActorComponent->SetRelativeLocation(PrimaryWeaponOffset);
+
+	if(WeaponActorComponent->GetChildActorClass() != PrimaryWeapon)
+	{
+		WeaponActorComponent->SetChildActorClass(PrimaryWeapon);
+	}
 }
 
 // Called every frame
@@ -106,10 +121,14 @@ bool AUnit::isAlly(const AUnit& unit)const
 void AUnit::attack(AUnit & otherUnit)
 {
 	//raycast check ??
+	//applydamage
 
+	AWeapon *unitWeapon = Cast <AWeapon>(WeaponActorComponent->GetChildActor());
 
-
-	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Blue, FString("Attack: ") + GetName() + FString(" -> ") + otherUnit.GetName());
+	if(unitWeapon)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Emerald, FString::SanitizeFloat(unitWeapon->Damage));
+	}
 }
 
 int32 AUnit::getUnitRange() const
@@ -121,7 +140,12 @@ int32 AUnit::getUnitRange() const
 	}
 	else if(UnitState == EUnitState::ATTACKING)
 	{
-		retVal = 5; //TMP, change when wepaon will be add
+		AWeapon *unitWeapon = Cast <AWeapon>(WeaponActorComponent->GetChildActor());
+
+		if(unitWeapon)
+		{
+			retVal = unitWeapon->TileRange;
+		}
 	}
 
 	return retVal;
