@@ -77,7 +77,7 @@ public:
 
 	virtual void PostInitializeComponents()override;
 
-	FORCEINLINE class UStaticMeshComponent* GetMesh() const { return TileMesh; }
+	FORCEINLINE class UStaticMeshComponent* GetTileMesh() const { return TileMesh; }
 	FORCEINLINE class UBoxComponent* GetBoxComponent() const { return BoxComponent; }
 	FORCEINLINE class UDecalComponent* GetTileIndicator() const { return TileIndicator; }
 
