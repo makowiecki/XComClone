@@ -45,6 +45,11 @@ void AWeapon::Tick( float DeltaTime )
 
 }
 
+const FText& AWeapon::getWeaponName() const
+{
+	return WeaponName;
+}
+
 bool AWeapon::isUsingFireDamage()
 {
 	return FireDamage;

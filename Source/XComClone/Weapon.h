@@ -30,6 +30,9 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnyWhere, Category = "Weapon")
 	bool FireDamage;
 
+	UPROPERTY(BlueprintReadWrite, EditAnyWhere, Category = "Weapon")
+	FText WeaponName;
+
 	// Sets default values for this actor's properties
 	AWeapon();
 
@@ -41,7 +44,7 @@ public:
 	// Called every frame
 	virtual void Tick( float DeltaSeconds ) override;
 
-	virtual const FString getWeaponName()const PURE_VIRTUAL(AWeapon::getWeaponName, return FString(TEXT("Weapon")););
+	virtual const FText& getWeaponName()const;
 	
 	virtual bool isUsingFireDamage();
 
