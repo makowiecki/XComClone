@@ -4,6 +4,7 @@
 #include "TileMap.h"
 #include "Unit.h"
 #include "XComCloneGameState.h"
+#include "XComCloneHUD.h"
 
 #include "Engine.h"
 #include "Editor.h"
@@ -298,6 +299,12 @@ void ATileMap::OnUnitMovementEnd(const AUnit* unit)
 			rangeTiles[i]->setInFireRangeTileColor();
 		}
 	}
+
+	AXComCloneHUD *myHud = Cast<AXComCloneHUD>(UGameplayStatics::GetPlayerController(this, 0)->GetHUD());
+	if(myHud)
+	{
+		myHud->setActiveUnit(mSelectedTile->getUnitOnTile());
+	}
 }
 
 void ATileMap::OnTurnChange(const EPlayerId nextPlayerTurn)
@@ -329,6 +336,12 @@ void ATileMap::selectTile(ATile * tile)
 			}
 		}
 
+		AXComCloneHUD *myHud = Cast<AXComCloneHUD>(UGameplayStatics::GetPlayerController(this, 0)->GetHUD());
+		if(myHud)
+		{
+			myHud->setActiveUnit(tile->getUnitOnTile());
+		}
+
 		tile->activate();
 		mSelectedTile = tile;
 	}
@@ -349,6 +362,12 @@ void ATileMap::deselectTile(int32 tileRange)
 		for(size_t i = 0; i < rangeTiles.Num(); i++)
 		{
 			rangeTiles[i]->setStandardTileColor();
+		}
+
+		AXComCloneHUD *myHud = Cast<AXComCloneHUD>(UGameplayStatics::GetPlayerController(this, 0)->GetHUD());
+		if(myHud)
+		{
+			myHud->deactivateUnit();
 		}
 
 		mSelectedTile->deactivate();
