@@ -17,7 +17,7 @@ public:
 
 	AXComCloneGameMode();
 
-	virtual void InitGameState() override;
+	virtual void BeginPlay() override;
 	
 private:
 
