@@ -76,7 +76,7 @@ void AUnit::Destroyed()
 
 	if(gameState)
 	{
-		gameState->removePlayerUnit(PlayerId);
+		gameState->removePlayerUnit(PlayerId, MovementRangeInTiles);
 	}
 }
 
