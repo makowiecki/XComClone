@@ -22,15 +22,18 @@ public:
 
 	void changeTurn();
 
-	bool isPlayerTurn(EPlayerId plyer)const;
+	bool isPlayerTurn(EPlayerId player)const;
 
 	void setMaxPlayerTurnPoints(int32 value);
 	int32 GetCurrentPlayerTurnPoints()const;
 
+	bool performAction(int32 points);
 	//removing turn points
 
 	void setInitPlayersUnits(int8 value);
 	int8 getPlayerUnits(EPlayerId pleyer)const;
+
+	void removePlayerUnit(EPlayerId player);
 	
 	DECLARE_EVENT_OneParam(AXComCloneGameState, FOnTurnChanged, const EPlayerId)
 	FOnTurnChanged& OnTurnChanged();
@@ -46,7 +49,6 @@ private:
 	int32 CurrentPlayerTurnPoints;
 	int32 MaxPlayerTurnPoints;
 
-	//int8 PlayerUnitsCounter[2];
 	TStaticArray<int8, 2> PlayerUnitsCounter;
 
 	FOnTurnChanged mTurnChangedEvent;

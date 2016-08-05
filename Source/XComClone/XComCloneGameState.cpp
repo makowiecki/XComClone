@@ -43,11 +43,28 @@ bool AXComCloneGameState::isPlayerTurn(EPlayerId player)const
 void AXComCloneGameState::setMaxPlayerTurnPoints(int32 value)
 {
 	MaxPlayerTurnPoints = value;
+	CurrentPlayerTurnPoints = MaxPlayerTurnPoints;
 }
 
 int32 AXComCloneGameState::GetCurrentPlayerTurnPoints()const
 {
 	return CurrentPlayerTurnPoints;
+}
+
+bool AXComCloneGameState::performAction(int32 points)
+{
+	if(points <= 0) { return false; }
+
+	if(points > CurrentPlayerTurnPoints) { return false; }
+
+	CurrentPlayerTurnPoints -= points;
+
+	if(CurrentPlayerTurnPoints <= 0)
+	{
+		changeTurn();
+	}
+
+	return true;
 }
 
 void AXComCloneGameState::setInitPlayersUnits(int8 value)
@@ -70,6 +87,18 @@ int8 AXComCloneGameState::getPlayerUnits(EPlayerId player)const
 	}
 
 	return 0;
+}
+
+void AXComCloneGameState::removePlayerUnit(EPlayerId player)
+{
+	if(player == EPlayerId::PLAYER_1)
+	{
+		--PlayerUnitsCounter[0];
+	}
+	else if(player == EPlayerId::PLAYER_2)
+	{
+		--PlayerUnitsCounter[1];
+	}
 }
 
 AXComCloneGameState::FOnTurnChanged & AXComCloneGameState::OnTurnChanged()
