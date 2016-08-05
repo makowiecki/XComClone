@@ -25,12 +25,12 @@ void AXComCloneGameState::changeTurn()
 	{
 		CurrentPlayer = EPlayerId::PLAYER_2;
 	}
-	else //PLAYER_2 turn
+	else if(isPlayerTurn(EPlayerId::PLAYER_2))
 	{
 		CurrentPlayer = EPlayerId::PLAYER_1;
 	}
 
-	CurrentPlayerTurnPoints = MaxPlayerTurnPoints;
+	CurrentPlayerTurnPoints = MaxPlayerTurnPoints[static_cast<int8>(CurrentPlayer)];
 
 	mTurnChangedEvent.Broadcast(CurrentPlayer);
 }
@@ -40,15 +40,24 @@ bool AXComCloneGameState::isPlayerTurn(EPlayerId player)const
 	return player == CurrentPlayer;
 }
 
-void AXComCloneGameState::setMaxPlayerTurnPoints(int32 value)
+void AXComCloneGameState::setMaxPlayerTurnPoints(EPlayerId player, int32 value)
 {
-	MaxPlayerTurnPoints = value;
-	CurrentPlayerTurnPoints = MaxPlayerTurnPoints;
+	MaxPlayerTurnPoints[static_cast<int8>(player)] = value;
+
+	if(isPlayerTurn(player))
+	{
+		CurrentPlayerTurnPoints = MaxPlayerTurnPoints[static_cast<int8>(player)];
+	}
 }
 
 int32 AXComCloneGameState::GetCurrentPlayerTurnPoints()const
 {
 	return CurrentPlayerTurnPoints;
+}
+
+int32 AXComCloneGameState::GetMaxPlayerTurnPoints(EPlayerId player) const
+{
+	return MaxPlayerTurnPoints[static_cast<int8>(player)];
 }
 
 bool AXComCloneGameState::performAction(int32 points)
@@ -77,28 +86,13 @@ void AXComCloneGameState::setInitPlayersUnits(int8 value)
 
 int8 AXComCloneGameState::getPlayerUnits(EPlayerId player)const
 {
-	if(player == EPlayerId::PLAYER_1)
-	{
-		return PlayerUnitsCounter[0];
-	}
-	else if(player == EPlayerId::PLAYER_2)
-	{
-		return PlayerUnitsCounter[1];
-	}
-
-	return 0;
+	return PlayerUnitsCounter[static_cast<int8>(player)];
 }
 
-void AXComCloneGameState::removePlayerUnit(EPlayerId player)
+void AXComCloneGameState::removePlayerUnit(EPlayerId player, int32 unitTurnPoints)
 {
-	if(player == EPlayerId::PLAYER_1)
-	{
-		--PlayerUnitsCounter[0];
-	}
-	else if(player == EPlayerId::PLAYER_2)
-	{
-		--PlayerUnitsCounter[1];
-	}
+	--PlayerUnitsCounter[static_cast<int8>(player)];
+	MaxPlayerTurnPoints[static_cast<int8>(player)] -= unitTurnPoints;
 }
 
 AXComCloneGameState::FOnTurnChanged & AXComCloneGameState::OnTurnChanged()
