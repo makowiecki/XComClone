@@ -3,6 +3,7 @@
 #include "XComClone.h"
 #include "Unit.h"
 #include "Weapon.h"
+#include "XComCloneGameState.h"
 
 
 // Sets default values
@@ -67,6 +68,18 @@ void AUnit::OnConstruction(const FTransform& Transform)
 	}
 }
 
+void AUnit::Destroyed()
+{
+	Super::Destroyed();
+
+	AXComCloneGameState * const gameState = GetWorld()->GetGameState<AXComCloneGameState>();
+
+	if(gameState)
+	{
+		gameState->removePlayerUnit(PlayerId);
+	}
+}
+
 // Called every frame
 void AUnit::Tick( float DeltaTime )
 {
@@ -89,6 +102,12 @@ void AUnit::Tick( float DeltaTime )
 
 			if(mCurrentIndex == mPathLocations.Num())
 			{
+				AXComCloneGameState * const gameState = GetWorld()->GetGameState<AXComCloneGameState>();
+				if(gameState)
+				{
+					gameState->performAction(mPathLocations.Num());
+				}
+
 				bIsMoving = false;
 				mUnitMovementEndEvent.Broadcast(this);
 			}
@@ -123,12 +142,21 @@ void AUnit::attack(AUnit & otherUnit)
 	//raycast check ??
 	//applydamage
 
-	AWeapon *unitWeapon = Cast <AWeapon>(WeaponActorComponent->GetChildActor());
 
-	if(unitWeapon)
+	AWeapon *unitWeapon = Cast <AWeapon>(WeaponActorComponent->GetChildActor());
+	float summarizedDamage = 0.f;
+
+	if(!unitWeapon) { return; }
+
+	for(size_t i = 0; i < unitWeapon->ShotsNumber; i++)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Emerald, FString::SanitizeFloat(unitWeapon->Damage));
+		if(FMath::RandRange(0.f, 1.f) <= unitWeapon->Accuracy) // hit
+		{
+			summarizedDamage += unitWeapon->Damage;
+		}
 	}
+
+	otherUnit.applyDamage(summarizedDamage);
 }
 
 int32 AUnit::getUnitRange() const
@@ -136,7 +164,16 @@ int32 AUnit::getUnitRange() const
 	int32 retVal = 0;
 	if(UnitState == EUnitState::MOVING)
 	{
-		retVal = MovementRangeInTiles;
+		AXComCloneGameState * const gameState = GetWorld()->GetGameState<AXComCloneGameState>();
+		if(gameState)
+		{
+			//GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Blue, FString("Min( ") + FString::FromInt(gameState->GetCurrentPlayerTurnPoints()) + FString(", ") + FString::FromInt(MovementRangeInTiles) + FString(")"));
+			retVal = FMath::Min(gameState->GetCurrentPlayerTurnPoints(), MovementRangeInTiles);
+		}
+		else
+		{
+			retVal = MovementRangeInTiles;
+		}
 	}
 	else if(UnitState == EUnitState::ATTACKING)
 	{
@@ -149,6 +186,16 @@ int32 AUnit::getUnitRange() const
 	}
 
 	return retVal;
+}
+
+void AUnit::applyDamage(float dmgValue)
+{
+	HealthPoints -= dmgValue;
+
+	if(HealthPoints <= 0)
+	{
+		this->Destroy();
+	}
 }
 
 AUnit::FOnUnitMovementBegin& AUnit::OnUnitMovementBegin()

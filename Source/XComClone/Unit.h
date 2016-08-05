@@ -38,6 +38,8 @@ public:
 
 	virtual void OnConstruction(const FTransform& Transform) override;
 
+	virtual void Destroyed() override;
+
 	// Called every frame
 	virtual void Tick( float DeltaSeconds ) override;
 
@@ -51,6 +53,8 @@ public:
 	void attack(AUnit& otherUnit);
 
 	int32 getUnitRange()const;
+
+	void applyDamage(float dmgValue);
 
 	DECLARE_EVENT_OneParam(AUnit, FOnUnitMovementBegin, const AUnit*)
 	FOnUnitMovementBegin& OnUnitMovementBegin();
