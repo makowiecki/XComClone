@@ -44,6 +44,12 @@ void ATileMap::BeginPlay()
 			worldUnit->OnUnitMovementEnd().AddUObject(this, &ATileMap::OnUnitMovementEnd);
 		}
 	}
+	
+	AXComCloneGameState * const gameState = GetWorld()->GetGameState<AXComCloneGameState>();
+	if(gameState)
+	{
+		gameState->OnTurnChanged().AddUObject(this, &ATileMap::OnTurnChange);
+	}
 }
 
 void ATileMap::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -151,7 +157,7 @@ void ATileMap::OnTileClicked(ATile* tile)
 
 	if(mSelectedTile == tile)
 	{
-		deselectTile();
+		deselectTile(mSelectedTile->getUnitOnTile()->getUnitRange());
 	}
 	else if(mSelectedTile)
 	{
@@ -173,7 +179,7 @@ void ATileMap::OnTileClicked(ATile* tile)
 					}
 				}
 
-				deselectTile();
+				deselectTile(rangeTiles.Num());
 				selectTile(tile);
 			}
 		}
@@ -190,7 +196,7 @@ void ATileMap::OnTileClicked(ATile* tile)
 		}
 		else if(tile->TileMode == ETileMode::ALLY)
 		{
-			deselectTile();
+			deselectTile(mSelectedTile->getUnitOnTile()->getUnitRange());
 			selectTile(tile);
 		}
 	}
@@ -269,27 +275,36 @@ void ATileMap::OnUnitMovementBegin(const AUnit* unit)
 
 void ATileMap::OnUnitMovementEnd(const AUnit* unit)
 {
-	if(unit)
+	if(!unit) { return; }
+
+	bIsUnitMoving = false;
+
+	if(!mSelectedTile) { return; }
+
+	mSelectedTile->setTileMode(ETileMode::ALLY);
+
+	TArray<ATile*> rangeTiles;
+
+	findTilesInRange(*mSelectedTile, rangeTiles, mSelectedTile->getUnitOnTile()->getUnitRange(), mSelectedTile->getUnitOnTile()->UnitState == EUnitState::ATTACKING ? true : false);
+
+	for(size_t i = 0; i < rangeTiles.Num(); i++)
 	{
-		bIsUnitMoving = false;
-		mSelectedTile->setTileMode(ETileMode::ALLY);
-
-		TArray<ATile*> rangeTiles;
-
-		findTilesInRange(*mSelectedTile, rangeTiles, mSelectedTile->getUnitOnTile()->getUnitRange(), mSelectedTile->getUnitOnTile()->UnitState == EUnitState::ATTACKING ? true : false);
-
-		for(size_t i = 0; i < rangeTiles.Num(); i++)
+		if(mSelectedTile->getUnitOnTile()->UnitState == EUnitState::MOVING)
 		{
-			if(mSelectedTile->getUnitOnTile()->UnitState == EUnitState::MOVING)
-			{
-				rangeTiles[i]->setInMovementRangeTileColor();
-			}
-			else if(mSelectedTile->getUnitOnTile()->UnitState == EUnitState::ATTACKING)
-			{
-				rangeTiles[i]->setInFireRangeTileColor();
-			}
+			rangeTiles[i]->setInMovementRangeTileColor();
+		}
+		else if(mSelectedTile->getUnitOnTile()->UnitState == EUnitState::ATTACKING)
+		{
+			rangeTiles[i]->setInFireRangeTileColor();
 		}
 	}
+}
+
+void ATileMap::OnTurnChange(const EPlayerId nextPlayerTurn)
+{
+	if(!mSelectedTile) { return; }
+
+	deselectTile(mSelectedTile->getUnitOnTile()->getUnitRange());
 }
 
 void ATileMap::selectTile(ATile * tile)
@@ -324,12 +339,12 @@ void ATileMap::selectTile(ATile * tile)
 	}
 }
 
-void ATileMap::deselectTile()
+void ATileMap::deselectTile(int32 tileRange)
 {
 	if(mSelectedTile)
 	{
 		TArray<ATile*> rangeTiles;
-		findTilesInRange(*mSelectedTile, rangeTiles, mSelectedTile->getUnitOnTile()->getUnitRange(), mSelectedTile->getUnitOnTile()->UnitState == EUnitState::ATTACKING ? true : false);
+		findTilesInRange(*mSelectedTile, rangeTiles, tileRange, mSelectedTile->getUnitOnTile()->UnitState == EUnitState::ATTACKING ? true : false);
 		
 		for(size_t i = 0; i < rangeTiles.Num(); i++)
 		{

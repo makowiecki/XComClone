@@ -89,8 +89,11 @@ private:
 	UFUNCTION()
 	void OnUnitMovementEnd(const AUnit* unit);
 
+	UFUNCTION()
+	void OnTurnChange(const EPlayerId nextPlayerTurn);
+
 	void selectTile(ATile* tile);
-	void deselectTile();
+	void deselectTile(int32 tileRange);
 
 	void getTileNeighbours(const ATile& tile, TArray<ATile*>& outArray);
 
