@@ -470,7 +470,7 @@ bool ATileMap::findPath(ATile& destination, TArray<FVector>& outArray)
 	}
 
 	TArray<ATile*> selectedTileRange;
-	findTilesInRange(*mSelectedTile, selectedTileRange, mSelectedTile->getUnitOnTile()->MovementRangeInTiles, false); //for pathfinding we need movement range and no enemy tiles
+	findTilesInRange(*mSelectedTile, selectedTileRange, mSelectedTile->getUnitOnTile()->getUnitRange(), false); //for pathfinding we need movement range and no enemy tiles
 
 	if(!selectedTileRange.Contains(&destination)) { return false; } // find path only if destination is in movement range
 
