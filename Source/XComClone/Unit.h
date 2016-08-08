@@ -16,7 +16,8 @@ class XCOMCLONE_API AUnit : public ACharacter
 public:
 
 	UPROPERTY(BlueprintReadWrite, EditAnyWhere, Category = "Gameplay")
-	int32 MovementRangeInTiles;
+	int32 MaxUnitTurnPoints;
+	//int32 MovementRangeInTiles;
 
 	UPROPERTY(BlueprintReadWrite, EditAnyWhere, Category = "Gameplay")
 	int32 HealthPoints;
@@ -43,8 +44,7 @@ public:
 	// Called every frame
 	virtual void Tick( float DeltaSeconds ) override;
 
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* InputComponent) override;
+	virtual void BeginPlay() override;
 		
 	void moveToLocation(const TArray<FVector>& path);
 
@@ -83,9 +83,16 @@ private:
 
 	EUnitAttackingWeapon mCurrentWeapon;
 
+	int32 mCurrentUnitTurnPoints;
+
+	bool bHasAttackedInCurrentTurn;
+
 	bool bIsMoving;
-		
+	
 	FOnUnitMovementBegin mUnitMovementBeginEvent;
 	FOnUnitMovementEnd mUnitMovementEndEvent;
 	FOnUnitStateChange mUnitStateChangeEvent;
+
+	UFUNCTION()
+	void OnTurnChange(const EPlayerId nextPlayerTurn);
 };

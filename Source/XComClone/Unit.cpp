@@ -47,12 +47,12 @@ AUnit::AUnit()
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 
 	bIsMoving = false;
+	bHasAttackedInCurrentTurn = false;
 
-	MovementRangeInTiles = 4;
+	MaxUnitTurnPoints = 4;
 	HealthPoints = 100;
 
 	UnitState = EUnitState::MOVING;
-
 }
 
 
@@ -76,7 +76,7 @@ void AUnit::Destroyed()
 
 	if(gameState)
 	{
-		gameState->removePlayerUnit(PlayerId, MovementRangeInTiles);
+		gameState->removePlayerUnit(PlayerId, MaxUnitTurnPoints + 1); // +1 is for an attack turn point
 	}
 }
 
@@ -108,6 +108,7 @@ void AUnit::Tick( float DeltaTime )
 					gameState->performAction(mPathLocations.Num());
 				}
 
+				mCurrentUnitTurnPoints -= mPathLocations.Num();
 				bIsMoving = false;
 				mUnitMovementEndEvent.Broadcast(this);
 			}
@@ -115,11 +116,18 @@ void AUnit::Tick( float DeltaTime )
 	}
 }
 
-// Called to bind functionality to input
-void AUnit::SetupPlayerInputComponent(class UInputComponent* InputComponent)
+void AUnit::BeginPlay()
 {
-	Super::SetupPlayerInputComponent(InputComponent);
+	Super::BeginPlay();
 
+	mCurrentUnitTurnPoints = MaxUnitTurnPoints;
+
+	AXComCloneGameState * const gameState = GetWorld()->GetGameState<AXComCloneGameState>();
+
+	if(gameState)
+	{
+		gameState->OnTurnChanged().AddUObject(this, &AUnit::OnTurnChange);
+	}	
 }
 
 void AUnit::moveToLocation(const TArray<FVector>& path)
@@ -138,8 +146,9 @@ bool AUnit::isAlly(const AUnit& unit)const
 }
 
 void AUnit::attack(AUnit & otherUnit)
-{
-	//raycast check ??
+{	
+	if(bHasAttackedInCurrentTurn) { return; }
+
 
 	AWeapon *unitWeapon = Cast <AWeapon>(WeaponActorComponent->GetChildActor());
 	float summarizedDamage = 0.f;
@@ -154,6 +163,15 @@ void AUnit::attack(AUnit & otherUnit)
 		}
 	}
 
+	bHasAttackedInCurrentTurn = true;
+	--mCurrentUnitTurnPoints;
+
+	AXComCloneGameState * const gameState = GetWorld()->GetGameState<AXComCloneGameState>();
+	if(gameState)
+	{
+		gameState->performAction(1); //1 point for attack
+	}
+
 	otherUnit.applyDamage(summarizedDamage);
 }
 
@@ -162,16 +180,7 @@ int32 AUnit::getUnitRange() const
 	int32 retVal = 0;
 	if(UnitState == EUnitState::MOVING)
 	{
-		AXComCloneGameState * const gameState = GetWorld()->GetGameState<AXComCloneGameState>();
-		if(gameState)
-		{
-			//GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Blue, FString("Min( ") + FString::FromInt(gameState->GetCurrentPlayerTurnPoints()) + FString(", ") + FString::FromInt(MovementRangeInTiles) + FString(")"));
-			retVal = FMath::Min(gameState->GetCurrentPlayerTurnPoints(), MovementRangeInTiles);
-		}
-		else
-		{
-			retVal = MovementRangeInTiles;
-		}
+		retVal = mCurrentUnitTurnPoints;
 	}
 	else if(UnitState == EUnitState::ATTACKING)
 	{
@@ -231,4 +240,11 @@ AUnit::FOnUnitMovementEnd& AUnit::OnUnitMovementEnd()
 AUnit::FOnUnitStateChange & AUnit::OnUnitStateChange()
 {
 	return mUnitStateChangeEvent;
+}
+
+void AUnit::OnTurnChange(const EPlayerId nextPlayerTurn)
+{
+	mCurrentUnitTurnPoints = MaxUnitTurnPoints;
+
+	bHasAttackedInCurrentTurn = false;
 }
