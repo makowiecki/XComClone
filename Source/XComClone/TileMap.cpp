@@ -322,7 +322,7 @@ void ATileMap::OnUnitStateChange(const AUnit* unit, int32 previousRange)
 
 
 	TArray<ATile*> rangeTiles;
-	findTilesInRange(*mSelectedTile, rangeTiles, previousRange, mSelectedTile->getUnitOnTile()->UnitState == EUnitState::ATTACKING ? true : false);
+	findTilesInRange(*mSelectedTile, rangeTiles, previousRange, true); //add enemytiles just for sure
 
 	for(size_t i = 0; i < rangeTiles.Num(); i++)
 	{
