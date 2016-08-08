@@ -56,11 +56,20 @@ public:
 
 	void applyDamage(float dmgValue);
 
+	void setUnitState(EUnitState newUnitState);
+
+	void setAttacking(EUnitAttackingWeapon unitWeapon);
+
+	void setMoving();
+
 	DECLARE_EVENT_OneParam(AUnit, FOnUnitMovementBegin, const AUnit*)
 	FOnUnitMovementBegin& OnUnitMovementBegin();
 
 	DECLARE_EVENT_OneParam(AUnit, FOnUnitMovementEnd, const AUnit*)
 	FOnUnitMovementEnd& OnUnitMovementEnd();
+
+	DECLARE_EVENT_TwoParams(AUnit, FOnUnitStateChange, const AUnit*, int32)
+	FOnUnitStateChange& OnUnitStateChange();
 
 	FORCEINLINE class UChildActorComponent* GetWeaponActorComponent() const { return WeaponActorComponent; }
 
@@ -70,10 +79,13 @@ private:
 	class UChildActorComponent *WeaponActorComponent;
 
 	TArray<FVector> mPathLocations;
-	int32 mCurrentIndex;
+	int32 mCurrentPathLocationsIndex;
+
+	EUnitAttackingWeapon mCurrentWeapon;
 
 	bool bIsMoving;
-	
+		
 	FOnUnitMovementBegin mUnitMovementBeginEvent;
 	FOnUnitMovementEnd mUnitMovementEndEvent;
+	FOnUnitStateChange mUnitStateChangeEvent;
 };

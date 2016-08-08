@@ -19,6 +19,13 @@ enum class EUnitState: uint8
 };
 
 UENUM()
+enum class EUnitAttackingWeapon: uint8
+{
+	PRIMARY_WEAPON UMETA(DisplayName = "PRIMARY WEAPON"),
+	SECONDARY_WEAPON UMETA(DisplayName = "SECONDARY WEAPON"),
+};
+
+UENUM()
 enum class EPlayerId: uint8
 {
 	PLAYER_1 UMETA(DisplayName = "PLAYER 1"),

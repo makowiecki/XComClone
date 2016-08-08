@@ -88,7 +88,7 @@ void AUnit::Tick( float DeltaTime )
 	if(bIsMoving)
 	{		
 		FVector actorFloorLocation(GetActorLocation().X, GetActorLocation().Y, 0.f);
-		FVector moveVector = mPathLocations[mCurrentIndex] - actorFloorLocation;
+		FVector moveVector = mPathLocations[mCurrentPathLocationsIndex] - actorFloorLocation;
 		moveVector.Normalize();
 		
 		AddMovementInput(moveVector, 1.f);
@@ -96,11 +96,11 @@ void AUnit::Tick( float DeltaTime )
 		actorFloorLocation.X = GetActorLocation().X;
 		actorFloorLocation.Y = GetActorLocation().Y;
 
-		if(FVector::PointsAreNear(actorFloorLocation, mPathLocations[mCurrentIndex], 5.f))
+		if(FVector::PointsAreNear(actorFloorLocation, mPathLocations[mCurrentPathLocationsIndex], 5.f))
 		{
-			++mCurrentIndex;
+			++mCurrentPathLocationsIndex;
 
-			if(mCurrentIndex == mPathLocations.Num())
+			if(mCurrentPathLocationsIndex == mPathLocations.Num())
 			{
 				AXComCloneGameState * const gameState = GetWorld()->GetGameState<AXComCloneGameState>();
 				if(gameState)
@@ -126,7 +126,7 @@ void AUnit::moveToLocation(const TArray<FVector>& path)
 {
 	mPathLocations.Empty();
 	mPathLocations.Append(path);
-	mCurrentIndex = 0;
+	mCurrentPathLocationsIndex = 0;
 	bIsMoving = true;
 
 	mUnitMovementBeginEvent.Broadcast(this);
@@ -140,8 +140,6 @@ bool AUnit::isAlly(const AUnit& unit)const
 void AUnit::attack(AUnit & otherUnit)
 {
 	//raycast check ??
-	//applydamage
-
 
 	AWeapon *unitWeapon = Cast <AWeapon>(WeaponActorComponent->GetChildActor());
 	float summarizedDamage = 0.f;
@@ -198,6 +196,28 @@ void AUnit::applyDamage(float dmgValue)
 	}
 }
 
+void AUnit::setUnitState(EUnitState newUnitState)
+{
+	if(UnitState != newUnitState)
+	{
+		int32 previousRange = getUnitRange();
+		UnitState = newUnitState;
+
+		mUnitStateChangeEvent.Broadcast(this, previousRange);
+	}
+}
+
+void AUnit::setAttacking(EUnitAttackingWeapon unitWeapon)
+{
+	mCurrentWeapon = unitWeapon;
+	setUnitState(EUnitState::ATTACKING);
+}
+
+void AUnit::setMoving()
+{
+	setUnitState(EUnitState::MOVING);
+}
+
 AUnit::FOnUnitMovementBegin& AUnit::OnUnitMovementBegin()
 {
 	return mUnitMovementBeginEvent;
@@ -206,4 +226,9 @@ AUnit::FOnUnitMovementBegin& AUnit::OnUnitMovementBegin()
 AUnit::FOnUnitMovementEnd& AUnit::OnUnitMovementEnd()
 {
 	return mUnitMovementEndEvent;
+}
+
+AUnit::FOnUnitStateChange & AUnit::OnUnitStateChange()
+{
+	return mUnitStateChangeEvent;
 }
