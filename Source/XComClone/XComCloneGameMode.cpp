@@ -35,7 +35,7 @@ void AXComCloneGameMode::BeginPlay()
 			AUnit *worldUnit = Cast<AUnit>(*it);
 			if(worldUnit)
 			{
-				playerTurnPoints[static_cast<int8>(worldUnit->PlayerId)] += (worldUnit->MovementRangeInTiles + 1);
+				playerTurnPoints[static_cast<int8>(worldUnit->PlayerId)] += (worldUnit->MaxUnitTurnPoints + 1);
 			}
 		}
 
