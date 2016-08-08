@@ -16,7 +16,6 @@ APathActor::APathActor()
 	mMesh->SetupAttachment(BaseRoot);
 	mMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	mMesh->SetRelativeScale3D(FVector(0.4f, 0.4f, 0.4f));
-	mMesh->SetRelativeLocation(FVector(0.f, 0.f, -15.f));
 	
 	if(MeshComponentAsset.Succeeded())
 	{
