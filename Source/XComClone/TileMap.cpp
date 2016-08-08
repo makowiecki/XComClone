@@ -90,6 +90,12 @@ void ATileMap::Destroyed()
 		if(Tile && Tile->IsValidLowLevel()) { Tile->Destroy(); }
 	}
 	mTilesArray.Empty();
+
+	for(APathActor *pathActor : mPathArray)
+	{
+		if(pathActor && pathActor->IsValidLowLevel()) { pathActor->Destroy(); }
+	}
+	mPathArray.Empty();
 }
 
 void ATileMap::PostInitializeComponents()
@@ -555,26 +561,27 @@ void ATileMap::drawPath()
 {
 	if(bFoundPath && mSelectedTile && mPathSteps.Num() > 0)
 	{
-		UPROPERTY() AMyCableActor *cable = GetWorld()->SpawnActor<AMyCableActor>(mSelectedTile->getCenterInWorldLocation(), FRotator::ZeroRotator);
-		cable->CableComponent->EndLocation = mPathSteps[0] - mSelectedTile->getCenterInWorldLocation();
-		cable->SetOwner(this);
-		mPathArray.Add(cable);
-
-		for(size_t i = 0; i < mPathSteps.Num() - 1; i++)
+		for(size_t i = 0; i < mPathSteps.Num(); i++)
 		{
-			UPROPERTY() AMyCableActor *cable = GetWorld()->SpawnActor<AMyCableActor>(mPathSteps[i], FRotator::ZeroRotator);
-			cable->CableComponent->EndLocation = mPathSteps[i + 1] - mPathSteps[i];
-			cable->SetOwner(this);
-			mPathArray.Add(cable);
+			if(mPathArray.Num() > i)
+			{
+				mPathArray[i]->SetActorLocation(mPathSteps[i]);
+				mPathArray[i]->SetVisibility(true);
+			}
+			else
+			{
+				UPROPERTY() APathActor *pathActor = GetWorld()->SpawnActor<APathActor>(mPathSteps[i], FRotator::ZeroRotator);
+				pathActor->SetOwner(this);
+				mPathArray.Add(pathActor);
+			}
 		}
 	}
 }
 
 void ATileMap::removePath()
 {
-	for(AMyCableActor *cable : mPathArray)
+	for(APathActor *pathActor : mPathArray)
 	{
-		if(cable && cable->IsValidLowLevel()) { cable->Destroy(); }
+		if(pathActor) { pathActor->SetVisibility(false); }
 	}
-	mPathArray.Empty();
 }

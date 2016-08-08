@@ -5,7 +5,7 @@
 #include "GameFramework/Actor.h"
 #include "Array.h"
 #include "Tile.h"
-#include "MyCableActor.h"
+#include "PathActor.h"
 #include "TileMap.generated.h"
 
 class AUnit;
@@ -59,7 +59,7 @@ private:
 	TArray<ATile*>	mTilesArray;
 
 	UPROPERTY()
-	TArray<AMyCableActor*> mPathArray;
+	TArray<APathActor*> mPathArray;
 
 	TArray<FVector> mPathSteps;
 
