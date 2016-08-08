@@ -28,12 +28,5 @@ APathActor::APathActor()
 
 void APathActor::SetVisibility(bool newVisibility)
 {
-	if(newVisibility)
-	{
-		mMesh->SetVisibility(true);
-	}
-	else
-	{
-		mMesh->SetVisibility(false);
-	}
+	mMesh->SetVisibility(newVisibility);
 }
