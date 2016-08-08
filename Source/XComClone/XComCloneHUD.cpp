@@ -6,6 +6,8 @@
 #include "XComCloneTypes.h"
 #include "Unit.h"
 
+#include "Engine.h"
+
 
 AXComCloneHUD::AXComCloneHUD()
 {
@@ -15,11 +17,6 @@ AXComCloneHUD::AXComCloneHUD()
 	{
 		TextFont = TextFontAsset.Object;
 	}
-
-
-	//bShowHitBoxDebugInfo = true;
-
-	//AddHitBox(FVector2D(50, 50), FVector2D(100, 50), TEXT("PrimaryWeapon"), true);
 }
 
 void AXComCloneHUD::setActiveUnit(AUnit *unit)
@@ -40,9 +37,60 @@ void AXComCloneHUD::DrawHUD()
 	if(gameState)
 	{
 		drawTurnPoints(*gameState);
+		drawButton(TEXT("EndTurn"), FString(TEXT("End Turn")));
+		
 		drawPlayerName(*gameState);
 		drawPlayerUnits(*gameState);
+
+		if(mActiveUnit)
+		{
+			drawButton(TEXT("PrimaryWeapon"), FString(TEXT("Primary Weapon")));
+			drawButton(TEXT("MoveUnit"), FString(TEXT("Move Unit")));
+			drawButton(TEXT("SecondaryWeapon"), FString(TEXT("Secondary Weapon")));
+		}
 	}
+}
+
+void AXComCloneHUD::NotifyHitBoxClick(FName BoxName)
+{
+	AXComCloneGameState * const gameState = GetWorld()->GetGameState<AXComCloneGameState>();
+	
+	if(BoxName == TEXT("EndTurn"))
+	{
+		if(gameState)
+		{
+			gameState->changeTurn();
+		}
+	}
+	else if(BoxName == TEXT("PrimaryWeapon"))
+	{
+		mActiveUnit->setAttacking(EUnitAttackingWeapon::PRIMARY_WEAPON);
+	}
+	else if(BoxName == TEXT("MoveUnit"))
+	{
+		mActiveUnit->setMoving();
+	}
+	else if(BoxName == TEXT("SecondaryWeapon"))
+	{
+		mActiveUnit->setAttacking(EUnitAttackingWeapon::SECONDARY_WEAPON);
+	}
+}
+
+void AXComCloneHUD::BeginPlay()
+{
+	Super::BeginPlay();
+	
+	FVector2D viewSize = FVector2D(100.f, 100.f);
+
+	if(GEngine && GEngine->GameViewport)
+	{
+		GEngine->GameViewport->GetViewportSize(viewSize);
+	}
+
+	mButtons.Add(TEXT("EndTurn"), ButtonData(25.f, 75.f, 100.f, 50.f));
+	mButtons.Add(TEXT("PrimaryWeapon"), ButtonData(25.f, viewSize.Y - 25.f - 50.f, 100.f, 50.f));
+	mButtons.Add(TEXT("MoveUnit"), ButtonData(viewSize.X / 2 - 50.f, viewSize.Y - 25.f - 50.f, 100.f, 50.f));
+	mButtons.Add(TEXT("SecondaryWeapon"), ButtonData(viewSize.X - 25.f - 100.f, viewSize.Y - 25.f - 50.f, 100.f, 50.f));
 }
 
 void AXComCloneHUD::drawTurnPoints(const AXComCloneGameState& gameState)
@@ -53,6 +101,25 @@ void AXComCloneHUD::drawTurnPoints(const AXComCloneGameState& gameState)
 	FText text = FText::FromString(FString(TEXT("Turn points: ")) + FString::FromInt(currnetPlayerTurnPoints) + FString(TEXT("/")) + FString::FromInt(maxPlayerTurnPoints));
 
 	FCanvasTextItem textItem(FVector2D(25.f, 25.f), text, TextFont, FLinearColor::Black);
+
+	Canvas->DrawItem(textItem);
+}
+
+void AXComCloneHUD::drawButton(const FName& buttonName, const FString& buttonText)
+{
+	FVector2D buttonPosition(mButtons[buttonName].X, mButtons[buttonName].Y);
+	FVector2D buttonSize(mButtons[buttonName].Width, mButtons[buttonName].Height);
+
+	FCanvasTileItem button(buttonPosition, buttonSize, FLinearColor(0.5f, 0.75f, 1.f, 0.15f));
+
+	Canvas->DrawItem(button);
+
+	AddHitBox(FVector2D(mButtons[buttonName].X, mButtons[buttonName].Y), FVector2D(mButtons[buttonName].Width, mButtons[buttonName].Height), buttonName, true);
+
+	FCanvasTextItem textItem(buttonPosition + buttonSize / 2, FText::FromString(buttonText), TextFont, FLinearColor::Black);
+	textItem.bCentreX = true;
+	textItem.bCentreY = true;
+	textItem.Scale.Set(0.75f, 0.75f);
 
 	Canvas->DrawItem(textItem);
 }
