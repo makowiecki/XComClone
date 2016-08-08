@@ -90,6 +90,9 @@ private:
 	void OnUnitMovementEnd(const AUnit* unit);
 
 	UFUNCTION()
+	void OnUnitStateChange(const AUnit* unit, int32 previousRange);
+
+	UFUNCTION()
 	void OnTurnChange(const EPlayerId nextPlayerTurn);
 
 	void selectTile(ATile* tile);

@@ -43,6 +43,7 @@ void ATileMap::BeginPlay()
 		{
 			worldUnit->OnUnitMovementBegin().AddUObject(this, &ATileMap::OnUnitMovementBegin);
 			worldUnit->OnUnitMovementEnd().AddUObject(this, &ATileMap::OnUnitMovementEnd);
+			worldUnit->OnUnitStateChange().AddUObject(this, &ATileMap::OnUnitStateChange);
 		}
 	}
 	
@@ -304,6 +305,37 @@ void ATileMap::OnUnitMovementEnd(const AUnit* unit)
 	if(myHud)
 	{
 		myHud->setActiveUnit(mSelectedTile->getUnitOnTile());
+	}
+}
+
+void ATileMap::OnUnitStateChange(const AUnit* unit, int32 previousRange)
+{
+	if(!unit) { return; }
+	if(!mSelectedTile) { return; }
+	if(!mSelectedTile->getUnitOnTile()) { return; }
+
+
+	TArray<ATile*> rangeTiles;
+	findTilesInRange(*mSelectedTile, rangeTiles, previousRange, mSelectedTile->getUnitOnTile()->UnitState == EUnitState::ATTACKING ? true : false);
+
+	for(size_t i = 0; i < rangeTiles.Num(); i++)
+	{
+		rangeTiles[i]->setStandardTileColor();
+	}
+
+
+	findTilesInRange(*mSelectedTile, rangeTiles, mSelectedTile->getUnitOnTile()->getUnitRange(), mSelectedTile->getUnitOnTile()->UnitState == EUnitState::ATTACKING ? true : false);
+
+	for(size_t i = 0; i < rangeTiles.Num(); i++)
+	{
+		if(mSelectedTile->getUnitOnTile()->UnitState == EUnitState::MOVING)
+		{
+			rangeTiles[i]->setInMovementRangeTileColor();
+		}
+		else if(mSelectedTile->getUnitOnTile()->UnitState == EUnitState::ATTACKING)
+		{
+			rangeTiles[i]->setInFireRangeTileColor();
+		}
 	}
 }
 
