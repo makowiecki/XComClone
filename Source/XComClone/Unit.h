@@ -64,6 +64,8 @@ public:
 
 	bool isShooting()const;
 
+	const FText& getPrimaryWeaponName()const;
+
 	DECLARE_EVENT_OneParam(AUnit, FOnUnitMovementBegin, const AUnit*)
 	FOnUnitMovementBegin& OnUnitMovementBegin();
 

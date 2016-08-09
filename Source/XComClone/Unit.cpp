@@ -242,6 +242,20 @@ bool AUnit::isShooting()const
 	return false;
 }
 
+const FText & AUnit::getPrimaryWeaponName() const
+{
+	if(!WeaponActorComponent) { return FText::GetEmpty(); }
+
+	AWeapon *unitWeapon = Cast <AWeapon>(WeaponActorComponent->GetChildActor());
+
+	if(unitWeapon)
+	{
+		return unitWeapon->getWeaponName();
+	}
+
+	return FText::GetEmpty();
+}
+
 AUnit::FOnUnitMovementBegin& AUnit::OnUnitMovementBegin()
 {
 	return mUnitMovementBeginEvent;
