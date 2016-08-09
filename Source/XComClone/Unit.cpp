@@ -247,4 +247,6 @@ void AUnit::OnTurnChange(const EPlayerId nextPlayerTurn)
 	mCurrentUnitTurnPoints = MaxUnitTurnPoints;
 
 	bHasAttackedInCurrentTurn = false;
+
+	UnitState = EUnitState::MOVING;
 }
