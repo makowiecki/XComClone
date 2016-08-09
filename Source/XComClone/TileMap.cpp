@@ -231,10 +231,6 @@ void ATileMap::OnBeginTileCursorOver(ATile* tile)
 
 		if(rangeTiles.Contains(tile))
 		{
-			/*if(tile->getUnitOnTile())
-			{
-			}
-			else*/
 			if(mSelectedTile->getUnitOnTile()->UnitState == EUnitState::MOVING)
 			{			
 				TArray<FVector> path;
@@ -252,6 +248,16 @@ void ATileMap::OnBeginTileCursorOver(ATile* tile)
 				   mSelectedTile != tile)
 				{
 					tile->deactivate();
+				}
+
+				if(tile->getUnitOnTile())
+				{
+					FVector groundActorLocation = mSelectedTile->getUnitOnTile()->GetActorLocation();
+					groundActorLocation.Z = tile->getCenterInWorldLocation().Z;				
+					FVector Direction = tile->getCenterInWorldLocation() - groundActorLocation;
+
+					FRotator newRotation = FRotationMatrix::MakeFromX(Direction).Rotator();
+					mSelectedTile->getUnitOnTile()->SetActorRotation(newRotation);				
 				}
 			}
 		}
