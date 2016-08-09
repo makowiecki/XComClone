@@ -11,14 +11,15 @@ AProjectile::AProjectile()
 
 	// Use a sphere as a simple collision representation
 	CollisionComp = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComp"));
-	CollisionComp->InitSphereRadius(15.0f);
+	CollisionComp->InitSphereRadius(5.0f);
 	CollisionComp->BodyInstance.SetCollisionProfileName("Projectile");
 	CollisionComp->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	CollisionComp->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
+	CollisionComp->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
+	CollisionComp->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Block);
 
-	FScriptDelegate OnHitDelegate;
-	OnHitDelegate.BindUFunction(this, "OnHit");
-	CollisionComp->OnComponentHit.Add(OnHitDelegate);	
+	//FScriptDelegate OnHitDelegate;
+	//OnHitDelegate.BindUFunction(this, "OnHit");
+	//CollisionComp->OnComponentHit.Add(OnHitDelegate);	
 
 	// Players can't walk on it
 	CollisionComp->SetWalkableSlopeOverride(FWalkableSlopeOverride(WalkableSlope_Unwalkable, 0.f));
@@ -29,8 +30,8 @@ AProjectile::AProjectile()
 
 	ProjectileMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ProjectileMesh"));
 	ProjectileMesh->SetupAttachment(CollisionComp);
-	ProjectileMesh->SetRelativeScale3D(FVector(0.2f, 0.2f, 0.2f));
-	ProjectileMesh->SetRelativeLocation(FVector(0.f, 0.f, -10.f));
+	ProjectileMesh->SetRelativeScale3D(FVector(0.1f, 0.1f, 0.1f));
+	ProjectileMesh->SetRelativeLocation(FVector(0.f, 0.f, -5.f));
 
 	if(ProjectileMeshAsset.Succeeded())
 	{
@@ -49,9 +50,9 @@ AProjectile::AProjectile()
 	InitialLifeSpan = 2.0f;
 }
 
-void AProjectile::OnHit(AActor * OtherActor, UPrimitiveComponent * OtherComp, FVector NormalImpulse, const FHitResult & Hit)
+void AProjectile::NotifyHit(class UPrimitiveComponent* MyComp, AActor* Other, class UPrimitiveComponent* OtherComp, bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalImpulse, const FHitResult& Hit)
 {
-	if((OtherActor != NULL) && (OtherActor != this)/* && (OtherComp != NULL) && OtherComp->IsSimulatingPhysics()*/)
+	if(MyComp && Other && OtherComp && Other != this)
 	{
 		Destroy();
 	}
