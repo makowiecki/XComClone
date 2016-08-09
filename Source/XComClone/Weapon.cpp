@@ -2,6 +2,7 @@
 
 #include "XComClone.h"
 #include "Weapon.h"
+#include "Projectile.h"
 
 
 // Sets default values
@@ -25,24 +26,9 @@ AWeapon::AWeapon()
 		WeaponMesh->SetStaticMesh(WeaponMeshAsset.Object);
 	}
 
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
-
 	FireDamage = false;
-}
 
-// Called when the game starts or when spawned
-void AWeapon::BeginPlay()
-{
-	Super::BeginPlay();
-	
-}
-
-// Called every frame
-void AWeapon::Tick( float DeltaTime )
-{
-	Super::Tick( DeltaTime );
-
+	ProjectileType = AProjectile::StaticClass();
 }
 
 const FText& AWeapon::getWeaponName() const
@@ -53,5 +39,27 @@ const FText& AWeapon::getWeaponName() const
 bool AWeapon::isUsingFireDamage()
 {
 	return FireDamage;
+}
+
+void AWeapon::shootProjectiles(const FVector& destination)
+{
+	if(!ProjectileType) { return; }
+
+	for(size_t i = 0; i < ShotsNumber; i++)
+	{
+		for(size_t j = 0; j < BulletsInOneShot; j++)
+		{
+			const FVector Direction = destination - GetActorLocation();
+
+			const FRotator SpawnRotation = FRotationMatrix::MakeFromX(Direction).Rotator();
+			const FVector SpawnLocation = GetActorLocation() + SpawnRotation.RotateVector(ProjectileOffset);
+
+			UWorld* const World = GetWorld();
+			if(World != NULL)
+			{
+				World->SpawnActor<AProjectile>(ProjectileType, SpawnLocation, SpawnRotation);
+			}
+		}
+	}
 }
 

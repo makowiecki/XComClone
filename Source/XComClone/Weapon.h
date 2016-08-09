@@ -5,6 +5,8 @@
 #include "GameFramework/Actor.h"
 #include "Weapon.generated.h"
 
+class AProjectile;
+
 UCLASS(abstract)
 class XCOMCLONE_API AWeapon : public AActor
 {
@@ -33,22 +35,22 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnyWhere, Category = "Weapon")
 	FText WeaponName;
 
+	UPROPERTY(BlueprintReadWrite, EditAnyWhere, Category = "Projectile")
+	TSubclassOf<AProjectile> ProjectileType;
+
+	UPROPERTY(BlueprintReadWrite, EditAnyWhere, Category = "Projectile")
+	FVector ProjectileOffset;
+
 	// Sets default values for this actor's properties
 	AWeapon();
 
 	virtual ~AWeapon() {};
 
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-	
-	// Called every frame
-	virtual void Tick( float DeltaSeconds ) override;
-
 	virtual const FText& getWeaponName()const;
 	
 	virtual bool isUsingFireDamage();
 
-	//virtual class UTexture2D* getWeaponTexture();
+	virtual void shootProjectiles(const FVector& destination);
 
 
 	FORCEINLINE class USceneComponent* GetBaseRoot() const { return BaseRoot; }
