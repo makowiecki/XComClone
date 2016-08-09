@@ -62,6 +62,8 @@ public:
 
 	void setMoving();
 
+	bool isShooting()const;
+
 	DECLARE_EVENT_OneParam(AUnit, FOnUnitMovementBegin, const AUnit*)
 	FOnUnitMovementBegin& OnUnitMovementBegin();
 

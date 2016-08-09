@@ -12,7 +12,7 @@ AUnit::AUnit()
 	static ConstructorHelpers::FObjectFinder<USkeletalMesh> SkeletalMeshAsset(TEXT("SkeletalMesh'/Game/Mannequin/Character/Mesh/SK_Mannequin.SK_Mannequin'"));
 	static ConstructorHelpers::FObjectFinder<UAnimBlueprint> AnimClassAsset(TEXT("AnimBlueprint'/Game/Mannequin/Animations/ThirdPerson_AnimBP.ThirdPerson_AnimBP'"));
 
-	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
+	GetCapsuleComponent()->InitCapsuleSize(35.f, 96.0f);
 	GetCapsuleComponent()->bGenerateOverlapEvents = true;
 
 	// Don't rotate character to camera direction
@@ -226,6 +226,20 @@ void AUnit::setAttacking(EUnitAttackingWeapon unitWeapon)
 void AUnit::setMoving()
 {
 	setUnitState(EUnitState::MOVING);
+}
+
+bool AUnit::isShooting()const
+{
+	if(!WeaponActorComponent) { return false; }
+
+	AWeapon *unitWeapon = Cast <AWeapon>(WeaponActorComponent->GetChildActor());
+
+	if(unitWeapon)
+	{
+		return unitWeapon->isShooting();
+	}
+
+	return false;
 }
 
 AUnit::FOnUnitMovementBegin& AUnit::OnUnitMovementBegin()
