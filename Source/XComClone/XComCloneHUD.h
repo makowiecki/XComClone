@@ -27,31 +27,20 @@ public:
 
 	virtual void NotifyHitBoxClick(FName BoxName)override;
 
-	virtual void BeginPlay()override;
-
 private:
-
-	struct ButtonData
-	{
-		float X;
-		float Y;
-		float Width;
-		float Height;
-
-		ButtonData(float pX, float pY, float pWidth, float pHeight)
-			:X(pX),Y(pY), Width(pWidth), Height(pHeight)
-		{}
-	};
-
+	
 	UFont* TextFont;
-
-	TMap<FName, ButtonData> mButtons;
 
 	AUnit *mActiveUnit; //weakptr ??
 
 	void drawTurnPoints(const AXComCloneGameState& gameState);
 
-	void drawButton(const FName& buttonName, const FString& buttonText);
+	void drawEndTurnButton(const FText& buttonText);
+	void drawPrimaryWeaponButton(const FText& buttonText);
+	void drawMoveUnitButton(const FText& buttonText);
+	void drawSecondaryWeaponButton(const FText& buttonText);
+
+	void drawButton(const FVector2D& buttonPosition, const FVector2D& buttonSize, const FName& buttonName, const FText& buttonText);
 
 	void drawPlayerName(const AXComCloneGameState& gameState);
 

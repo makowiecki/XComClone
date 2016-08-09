@@ -8,6 +8,7 @@
 
 #include "Engine.h"
 
+#define LOCTEXT_NAMESPACE "HUDNamespace" 
 
 AXComCloneHUD::AXComCloneHUD()
 {
@@ -37,16 +38,16 @@ void AXComCloneHUD::DrawHUD()
 	if(gameState)
 	{
 		drawTurnPoints(*gameState);
-		drawButton(TEXT("EndTurn"), FString(TEXT("End Turn")));
+		drawEndTurnButton(LOCTEXT("EndTurn", "End Turn"));
 		
 		drawPlayerName(*gameState);
 		drawPlayerUnits(*gameState);
 
 		if(mActiveUnit)
 		{
-			drawButton(TEXT("PrimaryWeapon"), FString(TEXT("Primary Weapon")));
-			drawButton(TEXT("MoveUnit"), FString(TEXT("Move Unit")));
-			drawButton(TEXT("SecondaryWeapon"), FString(TEXT("Secondary Weapon")));
+			drawPrimaryWeaponButton(mActiveUnit->getPrimaryWeaponName());
+			drawMoveUnitButton(LOCTEXT("MoveUnit", "Move Unit"));
+			drawSecondaryWeaponButton(LOCTEXT("SecondaryWeapon", "Secondary Weapon"));
 		}
 	}
 }
@@ -76,23 +77,6 @@ void AXComCloneHUD::NotifyHitBoxClick(FName BoxName)
 	}
 }
 
-void AXComCloneHUD::BeginPlay()
-{
-	Super::BeginPlay();
-	
-	FVector2D viewSize = FVector2D(100.f, 100.f);
-
-	if(GEngine && GEngine->GameViewport)
-	{
-		GEngine->GameViewport->GetViewportSize(viewSize);
-	}
-
-	mButtons.Add(TEXT("EndTurn"), ButtonData(25.f, 75.f, 100.f, 50.f));
-	mButtons.Add(TEXT("PrimaryWeapon"), ButtonData(25.f, viewSize.Y - 25.f - 50.f, 100.f, 50.f));
-	mButtons.Add(TEXT("MoveUnit"), ButtonData(viewSize.X / 2 - 50.f, viewSize.Y - 25.f - 50.f, 100.f, 50.f));
-	mButtons.Add(TEXT("SecondaryWeapon"), ButtonData(viewSize.X - 25.f - 100.f, viewSize.Y - 25.f - 50.f, 100.f, 50.f));
-}
-
 void AXComCloneHUD::drawTurnPoints(const AXComCloneGameState& gameState)
 {
 	const int32 currnetPlayerTurnPoints = gameState.GetCurrentPlayerTurnPoints();
@@ -105,18 +89,48 @@ void AXComCloneHUD::drawTurnPoints(const AXComCloneGameState& gameState)
 	Canvas->DrawItem(textItem);
 }
 
-void AXComCloneHUD::drawButton(const FName& buttonName, const FString& buttonText)
+void AXComCloneHUD::drawEndTurnButton(const FText& buttonText)
 {
-	FVector2D buttonPosition(mButtons[buttonName].X, mButtons[buttonName].Y);
-	FVector2D buttonSize(mButtons[buttonName].Width, mButtons[buttonName].Height);
+	const FVector2D buttonPosition(Canvas->OrgX + 25.f, Canvas->OrgY + 75.f);
+	const FVector2D buttonSize(100.f, 50.f);
 
+	drawButton(buttonPosition, buttonSize, TEXT("EndTurn"), buttonText);
+}
+
+void AXComCloneHUD::drawPrimaryWeaponButton(const FText& buttonText)
+{
+	const FVector2D buttonPosition(Canvas->OrgX + 25.f, Canvas->ClipY - 50.f - 25.f);
+	const FVector2D buttonSize(125.f, 50.f);
+
+	drawButton(buttonPosition, buttonSize, TEXT("PrimaryWeapon"), buttonText);
+
+}
+
+void AXComCloneHUD::drawMoveUnitButton(const FText& buttonText)
+{
+	const FVector2D buttonPosition(Canvas->OrgX + Canvas->SizeX / 2 - 50.f, Canvas->ClipY - 50.f - 25.f);
+	const FVector2D buttonSize(100.f, 50.f);
+
+	drawButton(buttonPosition, buttonSize, TEXT("MoveUnit"), buttonText);
+}
+
+void AXComCloneHUD::drawSecondaryWeaponButton(const FText& buttonText)
+{
+	const FVector2D buttonPosition(Canvas->ClipX - 125.f - 25.f, Canvas->ClipY - 50.f - 25.f);
+	const FVector2D buttonSize(125.f, 50.f);
+
+	drawButton(buttonPosition, buttonSize, TEXT("SecondaryWeapon"), buttonText);
+}
+
+void AXComCloneHUD::drawButton(const FVector2D& buttonPosition, const FVector2D& buttonSize, const FName& buttonName, const FText& buttonText)
+{
 	FCanvasTileItem button(buttonPosition, buttonSize, FLinearColor(0.5f, 0.75f, 1.f, 0.15f));
 
 	Canvas->DrawItem(button);
 
-	AddHitBox(FVector2D(mButtons[buttonName].X, mButtons[buttonName].Y), FVector2D(mButtons[buttonName].Width, mButtons[buttonName].Height), buttonName, true);
+	AddHitBox(buttonPosition, buttonSize, buttonName, true);
 
-	FCanvasTextItem textItem(buttonPosition + buttonSize / 2, FText::FromString(buttonText), TextFont, FLinearColor::Black);
+	FCanvasTextItem textItem(buttonPosition + buttonSize / 2, buttonText, TextFont, FLinearColor::Black);
 	textItem.bCentreX = true;
 	textItem.bCentreY = true;
 	textItem.Scale.Set(0.75f, 0.75f);
@@ -163,3 +177,5 @@ void AXComCloneHUD::drawPlayerUnits(const AXComCloneGameState& gameState)
 	Canvas->DrawItem(textItem);
 }
 
+
+#undef LOCTEXT_NAMESPACE 
