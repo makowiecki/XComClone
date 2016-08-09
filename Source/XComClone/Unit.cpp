@@ -172,6 +172,7 @@ void AUnit::attack(AUnit & otherUnit)
 		gameState->performAction(1); //1 point for attack
 	}
 
+	unitWeapon->shootProjectiles(otherUnit.GetActorLocation());
 	otherUnit.applyDamage(summarizedDamage);
 }
 
