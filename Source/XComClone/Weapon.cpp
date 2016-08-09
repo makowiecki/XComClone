@@ -29,6 +29,9 @@ AWeapon::AWeapon()
 	FireDamage = false;
 
 	ProjectileType = AProjectile::StaticClass();
+
+	mHowManyShots = 0;
+	bIsShooting = false;
 }
 
 const FText& AWeapon::getWeaponName() const
@@ -45,21 +48,46 @@ void AWeapon::shootProjectiles(const FVector& destination)
 {
 	if(!ProjectileType) { return; }
 
-	for(size_t i = 0; i < ShotsNumber; i++)
+	mHowManyShots = 0;
+	mDestinationForProjectiles = destination;
+	bIsShooting = true;
+	GetWorldTimerManager().SetTimer(mSpawningProjectilesTimerHandle, this, &AWeapon::spawnProjectiles, 0.25f, true, 0.f);
+}
+
+bool AWeapon::isShooting()const
+{
+	return bIsShooting;
+}
+
+void AWeapon::spawnProjectiles()
+{
+	if(mHowManyShots == ShotsNumber)
 	{
-		for(size_t j = 0; j < BulletsInOneShot; j++)
+		bIsShooting = false;
+		GetWorldTimerManager().ClearTimer(mSpawningProjectilesTimerHandle);
+		return;
+	}
+	else
+	{
+		++mHowManyShots;
+	}
+
+	for(size_t j = 0; j < BulletsInOneShot; j++)
+	{
+		FVector newDestination = mDestinationForProjectiles;
+		const float randomVal = 25.f;
+		newDestination.Y += FMath::RandRange(-randomVal, randomVal);
+		newDestination.Z += FMath::RandRange(-randomVal, randomVal);
+
+		const FVector Direction = newDestination - GetActorLocation();
+
+		const FRotator SpawnRotation = FRotationMatrix::MakeFromX(Direction).Rotator();
+		FVector SpawnLocation = GetActorLocation() + SpawnRotation.RotateVector(ProjectileOffset);
+
+		UWorld* const World = GetWorld();
+		if(World)
 		{
-			const FVector Direction = destination - GetActorLocation();
-
-			const FRotator SpawnRotation = FRotationMatrix::MakeFromX(Direction).Rotator();
-			const FVector SpawnLocation = GetActorLocation() + SpawnRotation.RotateVector(ProjectileOffset);
-
-			UWorld* const World = GetWorld();
-			if(World != NULL)
-			{
-				World->SpawnActor<AProjectile>(ProjectileType, SpawnLocation, SpawnRotation);
-			}
+			World->SpawnActor<AProjectile>(ProjectileType, SpawnLocation, SpawnRotation);
 		}
 	}
 }
-

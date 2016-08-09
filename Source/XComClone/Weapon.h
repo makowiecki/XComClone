@@ -52,6 +52,8 @@ public:
 
 	virtual void shootProjectiles(const FVector& destination);
 
+	bool isShooting()const;
+
 
 	FORCEINLINE class USceneComponent* GetBaseRoot() const { return BaseRoot; }
 
@@ -64,5 +66,12 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Body, meta = (AllowPrivateAccess = "true"))
 	class UStaticMeshComponent *WeaponMesh;
+
+	FTimerHandle mSpawningProjectilesTimerHandle;
+	int32 mHowManyShots;
+	FVector mDestinationForProjectiles;
+	bool bIsShooting;
+
+	void spawnProjectiles();
 
 };
