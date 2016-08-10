@@ -43,6 +43,8 @@ void AXComCloneHUD::DrawHUD()
 		drawPlayerName(*gameState);
 		drawPlayerUnits(*gameState);
 
+		drawUnitsHealthPoints();
+
 		if(mActiveUnit)
 		{
 			drawPrimaryWeaponButton(mActiveUnit->getPrimaryWeaponName());
@@ -175,6 +177,37 @@ void AXComCloneHUD::drawPlayerUnits(const AXComCloneGameState& gameState)
 	FCanvasTextItem textItem(FVector2D(Canvas->ClipX - textWidth - 25.f, 25.f), text, TextFont, FLinearColor::Black);	
 
 	Canvas->DrawItem(textItem);
+}
+
+void AXComCloneHUD::drawUnitsHealthPoints()
+{
+	for(FConstPawnIterator it = GetWorld()->GetPawnIterator(); it; ++it)
+	{
+		AUnit *worldUnit = Cast<AUnit>(*it);
+		if(worldUnit)
+		{
+			const int32 unitHp = worldUnit->HealthPoints;
+			const float zOffset = worldUnit->GetCapsuleComponent()->GetScaledCapsuleHalfHeight() + 30.f;
+			const FString text = FString(TEXT("HP: ")) + FString::FromInt(unitHp);
+			float textWidth = 0, textHeight = 0;
+			GetTextSize(text, textWidth, textHeight, TextFont, 0.45f);
+
+			FVector textLocation = worldUnit->GetActorLocation();
+			textLocation.Z += zOffset;
+			FVector2D textPosition = FVector2D(Canvas->Project(textLocation));
+			FVector2D backgroundPosition = textPosition;
+			backgroundPosition.X -= textWidth / 2 + 5.f;
+
+			FCanvasTileItem background(backgroundPosition, FVector2D(textWidth + 10.f, textHeight), FLinearColor::White);
+
+			FCanvasTextItem textItem(textPosition, FText::FromString(text), TextFont, FLinearColor::Black);
+			textItem.bCentreX = true;
+			textItem.Scale.Set(0.45f, 0.45f);
+
+			Canvas->DrawItem(background);
+			Canvas->DrawItem(textItem);
+		}
+	}
 }
 
 

@@ -46,5 +46,5 @@ private:
 
 	void drawPlayerUnits(const AXComCloneGameState& gameState);
 
-
+	void drawUnitsHealthPoints();
 };
