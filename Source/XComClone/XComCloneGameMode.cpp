@@ -16,9 +16,6 @@ AXComCloneGameMode::AXComCloneGameMode()
 	HUDClass = AXComCloneHUD::StaticClass();
 	//SpectatorClass = AXComCloneSpectatorPawn::StaticClass();
 	//DefaultPawnClass = AXComCloneSpectatorPawn::StaticClass();
-
-	MaxPlayerTurnPoints = 15;
-
 }
 
 void AXComCloneGameMode::BeginPlay()
