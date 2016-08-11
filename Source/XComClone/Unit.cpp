@@ -3,6 +3,7 @@
 #include "XComClone.h"
 #include "Unit.h"
 #include "Weapon.h"
+#include "Explosives.h"
 #include "XComCloneGameState.h"
 
 
@@ -223,7 +224,7 @@ int32 AUnit::getUnitRange() const
 			}
 			else if(mCurrentWeapon == EUnitAttackingWeapon::SECONDARY_WEAPON)
 			{
-				retVal = 0;
+				retVal = SecondaryWeapon.GetDefaultObject()->TileDistanceRange;
 			}
 		}
 	}
@@ -291,6 +292,16 @@ const FText & AUnit::getPrimaryWeaponName() const
 	if(unitWeapon)
 	{
 		return unitWeapon->getWeaponName();
+	}
+
+	return FText::GetEmpty();
+}
+
+const FText& AUnit::getSecondaryWeaponName()const
+{
+	if(SecondaryWeapon)
+	{
+		return SecondaryWeapon.GetDefaultObject()->getExplosivesName();
 	}
 
 	return FText::GetEmpty();

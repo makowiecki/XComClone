@@ -7,6 +7,7 @@
 #include "Unit.generated.h"
 
 class AWeapon;
+class AExplosives;
 
 UCLASS()
 class XCOMCLONE_API AUnit : public ACharacter
@@ -34,6 +35,9 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnyWhere, Category = "Weapon")
 	FVector PrimaryWeaponOffset;
 
+	UPROPERTY(BlueprintReadWrite, EditAnyWhere, Category = "Weapon")
+	TSubclassOf<AExplosives> SecondaryWeapon;
+
 	// Sets default values for this character's properties
 	AUnit();
 
@@ -54,6 +58,7 @@ public:
 
 	int32 getUnitRange()const;
 
+	UFUNCTION(BlueprintCallable, Category = "Gameplay")
 	void applyDamage(float dmgValue);
 
 	void setUnitState(EUnitState newUnitState);
@@ -64,10 +69,11 @@ public:
 
 	bool isShooting()const;
 
-	UFUNCTION(BlueprintCallable, Category = "Gameplay")
 	bool isOnFire()const;
 
 	const FText& getPrimaryWeaponName()const;
+
+	const FText& getSecondaryWeaponName()const;
 
 	DECLARE_EVENT_OneParam(AUnit, FOnUnitMovementBegin, const AUnit*)
 	FOnUnitMovementBegin& OnUnitMovementBegin();
