@@ -49,7 +49,7 @@ void AXComCloneHUD::DrawHUD()
 		{
 			drawPrimaryWeaponButton(mActiveUnit->getPrimaryWeaponName());
 			drawMoveUnitButton(LOCTEXT("MoveUnit", "Move Unit"));
-			drawSecondaryWeaponButton(LOCTEXT("SecondaryWeapon", "Secondary Weapon"));
+			drawSecondaryWeaponButton(mActiveUnit->getSecondaryWeaponName());
 		}
 	}
 }
