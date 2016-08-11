@@ -202,23 +202,24 @@ void ATileMap::OnTileClicked(ATile* tile)
 				mSelectedTile->getUnitOnTile()->attack(*tile->getUnitOnTile());
 			}
 		}
-		else if(tile->TileMode == ETileMode::ALLY)
+		else if(tile->TileMode == ETileMode::ALLY &&
+				!tile->getUnitOnTile()->isOnFire())
 		{
 			deselectTile(mSelectedTile->getUnitOnTile()->getUnitRange());
 			selectTile(tile);
 		}
 	}
-	else if(tile->getUnitOnTile())
+	else if(tile->getUnitOnTile() && !tile->getUnitOnTile()->isOnFire())
 	{
 		selectTile(tile);
 	}
 }
+
 void ATileMap::OnBeginTileCursorOver(ATile* tile)
 {
-	//if mSelected Tile then create path from selectedTile to tile
 	if(!tile) { return; }
 
-	if(bIsUnitMoving)
+	if(bIsUnitMoving || (tile->getUnitOnTile() && tile->getUnitOnTile()->isOnFire()))
 	{
 		tile->deactivate();
 		return;
