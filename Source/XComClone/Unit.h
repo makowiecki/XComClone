@@ -64,6 +64,9 @@ public:
 
 	bool isShooting()const;
 
+	UFUNCTION(BlueprintCallable, Category = "Gameplay")
+	bool isOnFire()const;
+
 	const FText& getPrimaryWeaponName()const;
 
 	DECLARE_EVENT_OneParam(AUnit, FOnUnitMovementBegin, const AUnit*)
@@ -77,10 +80,15 @@ public:
 
 	FORCEINLINE class UChildActorComponent* GetWeaponActorComponent() const { return WeaponActorComponent; }
 
+	FORCEINLINE class UParticleSystemComponent* GetOnFireComponent() const { return OnFireComponent; }
+
 private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Body, meta = (AllowPrivateAccess = "true"))
 	class UChildActorComponent *WeaponActorComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Body, meta = (AllowPrivateAccess = "true"))
+	class UParticleSystemComponent *OnFireComponent;
 
 	TArray<FVector> mPathLocations;
 	int32 mCurrentPathLocationsIndex;
@@ -92,6 +100,8 @@ private:
 	bool bHasAttackedInCurrentTurn;
 
 	bool bIsMoving;
+
+	bool bIsOnFire;
 	
 	FOnUnitMovementBegin mUnitMovementBeginEvent;
 	FOnUnitMovementEnd mUnitMovementEndEvent;

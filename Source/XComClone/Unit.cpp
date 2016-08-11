@@ -11,6 +11,7 @@ AUnit::AUnit()
 {
 	static ConstructorHelpers::FObjectFinder<USkeletalMesh> SkeletalMeshAsset(TEXT("SkeletalMesh'/Game/Mannequin/Character/Mesh/SK_Mannequin.SK_Mannequin'"));
 	static ConstructorHelpers::FObjectFinder<UAnimBlueprint> AnimClassAsset(TEXT("AnimBlueprint'/Game/Mannequin/Animations/ThirdPerson_AnimBP.ThirdPerson_AnimBP'"));
+	static ConstructorHelpers::FObjectFinder<UParticleSystem> ParticleSystemAsset(TEXT("ParticleSystem'/Game/StarterContent/Particles/P_Fire.P_Fire'"));
 
 	GetCapsuleComponent()->InitCapsuleSize(35.f, 96.0f);
 	GetCapsuleComponent()->bGenerateOverlapEvents = true;
@@ -37,6 +38,16 @@ AUnit::AUnit()
 	WeaponActorComponent->SetChildActorClass(PrimaryWeapon);
 	WeaponActorComponent->SetRelativeLocation(PrimaryWeaponOffset);
 
+	OnFireComponent = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("OnFireComponent"));
+	OnFireComponent->SetupAttachment(GetCapsuleComponent());
+	OnFireComponent->bAutoActivate = false;
+
+	if(ParticleSystemAsset.Succeeded())
+	{
+		OnFireComponent->SetTemplate(ParticleSystemAsset.Object);
+	}
+
+
 	PrimaryWeaponOffset.Set(0.f, 20.f, 20.f);
 
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
@@ -48,6 +59,7 @@ AUnit::AUnit()
 
 	bIsMoving = false;
 	bHasAttackedInCurrentTurn = false;
+	bIsOnFire = false;
 
 	MaxUnitTurnPoints = 4;
 	HealthPoints = 100;
@@ -162,9 +174,11 @@ void AUnit::attack(AUnit & otherUnit)
 			summarizedDamage += unitWeapon->Damage;
 		}
 	}
+	
+	otherUnit.bIsOnFire = unitWeapon->isUsingFireDamage();
+	otherUnit.GetOnFireComponent()->SetActive(otherUnit.bIsOnFire);
 
 	bHasAttackedInCurrentTurn = true;
-	--mCurrentUnitTurnPoints;
 
 	AXComCloneGameState * const gameState = GetWorld()->GetGameState<AXComCloneGameState>();
 	if(gameState)
@@ -242,6 +256,11 @@ bool AUnit::isShooting()const
 	return false;
 }
 
+bool AUnit::isOnFire() const
+{
+	return bIsOnFire;
+}
+
 const FText & AUnit::getPrimaryWeaponName() const
 {
 	if(!WeaponActorComponent) { return FText::GetEmpty(); }
@@ -278,4 +297,10 @@ void AUnit::OnTurnChange(const EPlayerId nextPlayerTurn)
 	bHasAttackedInCurrentTurn = false;
 
 	UnitState = EUnitState::MOVING;
+
+	if(PlayerId != nextPlayerTurn)
+	{
+		bIsOnFire = false; // stop beeing on fire after my turn (condition - only 2 players)
+		OnFireComponent->SetActive(bIsOnFire);
+	}
 }
