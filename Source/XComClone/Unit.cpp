@@ -117,10 +117,17 @@ void AUnit::Tick( float DeltaTime )
 				AXComCloneGameState * const gameState = GetWorld()->GetGameState<AXComCloneGameState>();
 				if(gameState)
 				{
-					gameState->performAction(mPathLocations.Num());
+					if(isOnFire())
+					{
+						gameState->performAction(MaxUnitTurnPoints + 1); //+1 if for attack point
+					}
+					else
+					{
+						gameState->performAction(mPathLocations.Num());
+					}
 				}
 
-				mCurrentUnitTurnPoints -= mPathLocations.Num();
+				mCurrentUnitTurnPoints -= isOnFire() ? (MaxUnitTurnPoints + 1) : mPathLocations.Num();
 				bIsMoving = false;
 				mUnitMovementEndEvent.Broadcast(this);
 			}
