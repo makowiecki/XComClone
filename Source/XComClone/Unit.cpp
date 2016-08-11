@@ -200,17 +200,31 @@ void AUnit::attack(AUnit & otherUnit)
 int32 AUnit::getUnitRange() const
 {
 	int32 retVal = 0;
+
 	if(UnitState == EUnitState::MOVING)
 	{
 		retVal = mCurrentUnitTurnPoints;
 	}
 	else if(UnitState == EUnitState::ATTACKING)
 	{
-		AWeapon *unitWeapon = Cast <AWeapon>(WeaponActorComponent->GetChildActor());
-
-		if(unitWeapon)
+		if(bHasAttackedInCurrentTurn)
 		{
-			retVal = unitWeapon->TileRange;
+			retVal = 0;
+		}
+		else
+		{
+			if(mCurrentWeapon == EUnitAttackingWeapon::PRIMARY_WEAPON)
+			{
+				AWeapon *unitWeapon = Cast <AWeapon>(WeaponActorComponent->GetChildActor());
+				if(unitWeapon)
+				{
+					retVal = unitWeapon->TileRange;
+				}
+			}
+			else if(mCurrentWeapon == EUnitAttackingWeapon::SECONDARY_WEAPON)
+			{
+				retVal = 0;
+			}
 		}
 	}
 
