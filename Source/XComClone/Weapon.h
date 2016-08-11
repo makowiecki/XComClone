@@ -46,11 +46,11 @@ public:
 
 	virtual ~AWeapon() {};
 
-	virtual const FText& getWeaponName()const;
+	const FText& getWeaponName()const;
 	
-	virtual bool isUsingFireDamage();
+	bool isUsingFireDamage();
 
-	virtual void shootProjectiles(const FVector& destination);
+	void shootProjectiles(const FVector& destination);
 
 	bool isShooting()const;
 
