@@ -250,7 +250,7 @@ void ATileMap::OnBeginTileCursorOver(ATile* tile)
 					tile->deactivate();
 				}
 
-				if(tile->getUnitOnTile() && !mSelectedTile->getUnitOnTile()->isShooting())
+				if(tile->getUnitOnTile() && tile->getUnitOnTile() != mSelectedTile->getUnitOnTile() && !mSelectedTile->getUnitOnTile()->isShooting())
 				{
 					FVector groundActorLocation = mSelectedTile->getUnitOnTile()->GetActorLocation();
 					groundActorLocation.Z = tile->getCenterInWorldLocation().Z;				
