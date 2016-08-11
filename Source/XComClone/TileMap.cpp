@@ -200,6 +200,12 @@ void ATileMap::OnTileClicked(ATile* tile)
 			if(rangeTiles.Contains(tile))
 			{
 				mSelectedTile->getUnitOnTile()->attack(*tile->getUnitOnTile());
+				
+				for(size_t i = 0; i < rangeTiles.Num(); i++)
+				{
+					rangeTiles[i]->setStandardTileColor();
+				}
+				mSelectedTile->setInFireRangeTileColor();
 			}
 		}
 		else if(tile->TileMode == ETileMode::ALLY &&
@@ -219,7 +225,7 @@ void ATileMap::OnBeginTileCursorOver(ATile* tile)
 {
 	if(!tile) { return; }
 
-	if(bIsUnitMoving || (tile->getUnitOnTile() && tile->getUnitOnTile()->isOnFire()))
+	if(bIsUnitMoving)
 	{
 		tile->deactivate();
 		return;
