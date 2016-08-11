@@ -233,7 +233,7 @@ void ATileMap::OnBeginTileCursorOver(ATile* tile)
 		if(rangeTiles.Contains(tile))
 		{
 			if(mSelectedTile->getUnitOnTile()->UnitState == EUnitState::MOVING)
-			{			
+			{
 				TArray<FVector> path;
 				bFoundPath = findPath(*tile, path);
 				if(bFoundPath)
@@ -271,11 +271,8 @@ void ATileMap::OnBeginTileCursorOver(ATile* tile)
 
 void ATileMap::OnEndTileCursorOver(ATile* tile)
 {
-	//if mSelected Tile then delete path from selectedTile to taile
 	if(tile)
 	{
-		//bFoundPath = false; //tmp??
-
 		removePath();
 	}
 }
@@ -354,9 +351,38 @@ void ATileMap::OnUnitStateChange(const AUnit* unit, int32 previousRange)
 
 void ATileMap::OnTurnChange(const EPlayerId nextPlayerTurn)
 {
-	if(!mSelectedTile) { return; }
+	if(mSelectedTile)
+	{
+		deselectTile(mSelectedTile->getUnitOnTile()->getUnitRange());
+	}
 
-	deselectTile(mSelectedTile->getUnitOnTile()->getUnitRange());
+	TArray<ATile*> rangeTiles;
+	TArray<FVector> path;
+
+	// find all tiles with units on fire
+	for(auto it = mTilesArray.CreateIterator(); it; ++it)
+	{
+		AUnit* unitOnTile = (*it)->getUnitOnTile();
+
+		if(unitOnTile && unitOnTile->PlayerId == nextPlayerTurn && unitOnTile->isOnFire())
+		{
+			// for each unit on fire find new random position
+			findTilesInRange(**it, rangeTiles, unitOnTile->getUnitRange(), false);
+
+			ATile *randomDestination = rangeTiles[FMath::RandRange(0, rangeTiles.Num())];
+
+			// for each unit on fire find path to new random position
+			mSelectedTile = *it; // temporary only for pathfinding
+
+			if(findPath(*randomDestination, path))
+			{
+				// for each unit on fire move to new random position
+				unitOnTile ->moveToLocation(path);
+			}
+
+			mSelectedTile = nullptr;
+		}
+	}
 }
 
 void ATileMap::selectTile(ATile * tile)
