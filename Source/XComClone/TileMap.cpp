@@ -169,26 +169,44 @@ void ATileMap::OnTileClicked(ATile* tile)
 	}
 	else if(mSelectedTile)
 	{
-		if(tile->TileMode == ETileMode::EMPTY &&
-		   mSelectedTile->getUnitOnTile()->UnitState == EUnitState::MOVING) //move to tile along path
+		if(tile->TileMode == ETileMode::EMPTY)
 		{
-			TArray<ATile*> rangeTiles;
-			findTilesInRange(*mSelectedTile, rangeTiles, mSelectedTile->getUnitOnTile()->getUnitRange(), false);
-
-			if(rangeTiles.Contains(tile))
+			if(mSelectedTile->getUnitOnTile()->UnitState == EUnitState::MOVING) //move to tile along path
 			{
-				AUnit* unitOnSelectedTile = mSelectedTile->getUnitOnTile();
-				if(unitOnSelectedTile)
-				{
-					if(bFoundPath)
-					{
-						unitOnSelectedTile->moveToLocation(mPathSteps);
-						removePath();
-					}
-				}
+				TArray<ATile*> rangeTiles;
+				findTilesInRange(*mSelectedTile, rangeTiles, mSelectedTile->getUnitOnTile()->getUnitRange(), false);
 
-				deselectTile(rangeTiles.Num());
-				selectTile(tile);
+				if(rangeTiles.Contains(tile))
+				{
+					AUnit* unitOnSelectedTile = mSelectedTile->getUnitOnTile();
+					if(unitOnSelectedTile)
+					{
+						if(bFoundPath)
+						{
+							unitOnSelectedTile->moveToLocation(mPathSteps);
+							removePath();
+						}
+					}
+
+					deselectTile(rangeTiles.Num());
+					selectTile(tile);
+				}
+			}
+			else if(mSelectedTile->getUnitOnTile()->UnitState == EUnitState::ATTACKING) // "attack" tile
+			{
+				TArray<ATile*> rangeTiles;
+				findTilesInRange(*mSelectedTile, rangeTiles, mSelectedTile->getUnitOnTile()->getUnitRange(), true);
+
+				if(rangeTiles.Contains(tile))
+				{
+					mSelectedTile->getUnitOnTile()->attack(tile->getCenterInWorldLocation());
+
+					for(size_t i = 0; i < rangeTiles.Num(); i++)
+					{
+						rangeTiles[i]->setStandardTileColor();
+					}
+					mSelectedTile->setInFireRangeTileColor();
+				}
 			}
 		}
 		else if(tile->TileMode == ETileMode::ENEMY &&
@@ -251,13 +269,14 @@ void ATileMap::OnBeginTileCursorOver(ATile* tile)
 			}
 			else if(mSelectedTile->getUnitOnTile()->UnitState == EUnitState::ATTACKING)
 			{
-				if(tile->TileMode != ETileMode::ENEMY &&
+				if(!mSelectedTile->getUnitOnTile()->isUsingSecondaryWeapon() &&
+				   tile->TileMode != ETileMode::ENEMY &&
 				   mSelectedTile != tile)
 				{
 					tile->deactivate();
 				}
 
-				if(tile->getUnitOnTile() && tile->getUnitOnTile() != mSelectedTile->getUnitOnTile() && !mSelectedTile->getUnitOnTile()->isShooting())
+				if((tile->getUnitOnTile() || mSelectedTile->getUnitOnTile()->isUsingSecondaryWeapon()) && tile->getUnitOnTile() != mSelectedTile->getUnitOnTile() && !mSelectedTile->getUnitOnTile()->isShooting())
 				{
 					FVector groundActorLocation = mSelectedTile->getUnitOnTile()->GetActorLocation();
 					groundActorLocation.Z = tile->getCenterInWorldLocation().Z;				
