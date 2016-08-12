@@ -14,8 +14,8 @@ AXComCloneGameMode::AXComCloneGameMode()
 	PlayerControllerClass = AXComClonePlayerController::StaticClass();
 	GameStateClass = AXComCloneGameState::StaticClass();
 	HUDClass = AXComCloneHUD::StaticClass();
-	//SpectatorClass = AXComCloneSpectatorPawn::StaticClass();
-	//DefaultPawnClass = AXComCloneSpectatorPawn::StaticClass();
+	SpectatorClass = AXComCloneSpectatorPawn::StaticClass();
+	DefaultPawnClass = AXComCloneSpectatorPawn::StaticClass();
 }
 
 void AXComCloneGameMode::BeginPlay()
