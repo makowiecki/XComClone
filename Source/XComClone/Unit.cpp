@@ -166,9 +166,15 @@ bool AUnit::isAlly(const AUnit& unit)const
 }
 
 void AUnit::attack(AUnit & otherUnit)
-{	
+{
+	if(UnitState != EUnitState::ATTACKING) { return; }
 	if(bHasAttackedInCurrentTurn) { return; }
 
+	if(mCurrentWeapon == EUnitAttackingWeapon::SECONDARY_WEAPON)
+	{
+		attack(otherUnit.GetActorLocation());
+		return;
+	}
 
 	AWeapon *unitWeapon = Cast <AWeapon>(WeaponActorComponent->GetChildActor());
 	float summarizedDamage = 0.f;
@@ -198,6 +204,32 @@ void AUnit::attack(AUnit & otherUnit)
 	otherUnit.applyDamage(summarizedDamage);
 }
 
+void AUnit::attack(const FVector& attackPoint)
+{
+	if(UnitState != EUnitState::ATTACKING) { return; }
+	if(mCurrentWeapon != EUnitAttackingWeapon::SECONDARY_WEAPON) { return; }
+	if(bHasAttackedInCurrentTurn) { return; }
+
+	bHasAttackedInCurrentTurn = true;
+
+	AXComCloneGameState * const gameState = GetWorld()->GetGameState<AXComCloneGameState>();
+	if(gameState)
+	{
+		gameState->performAction(1); //1 point for attack
+	}
+
+
+	FVector newDestination = attackPoint;
+	newDestination.Z += GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
+	const FVector Direction = newDestination - GetActorLocation();
+
+	const FRotator SpawnRotation = FRotationMatrix::MakeFromX(Direction).Rotator();
+	FVector SpawnLocation = GetActorLocation() + SpawnRotation.RotateVector(FVector(15.f, 0.f, 0.f));
+
+	UPROPERTY() AExplosives *explosives = GetWorld()->SpawnActor<AExplosives>(SecondaryWeapon, SpawnLocation, SpawnRotation);
+	explosives->GetProjectileMovement()->Velocity += Direction * 2;
+}
+
 int32 AUnit::getUnitRange() const
 {
 	int32 retVal = 0;
@@ -224,7 +256,7 @@ int32 AUnit::getUnitRange() const
 			}
 			else if(mCurrentWeapon == EUnitAttackingWeapon::SECONDARY_WEAPON)
 			{
-				retVal = SecondaryWeapon.GetDefaultObject()->TileDistanceRange;
+				retVal = SecondaryWeapon.GetDefaultObject()->TileDistanceToThrowRange;
 			}
 		}
 	}
@@ -242,26 +274,29 @@ void AUnit::applyDamage(float dmgValue)
 	}
 }
 
-void AUnit::setUnitState(EUnitState newUnitState)
-{
-	if(UnitState != newUnitState)
-	{
-		int32 previousRange = getUnitRange();
-		UnitState = newUnitState;
-
-		mUnitStateChangeEvent.Broadcast(this, previousRange);
-	}
-}
-
 void AUnit::setAttacking(EUnitAttackingWeapon unitWeapon)
 {
+	if(UnitState == EUnitState::ATTACKING &&
+	   mCurrentWeapon == unitWeapon)
+	{
+		return;
+	}
+
+	int32 previousRange = getUnitRange();
+	UnitState = EUnitState::ATTACKING;
 	mCurrentWeapon = unitWeapon;
-	setUnitState(EUnitState::ATTACKING);
+
+	mUnitStateChangeEvent.Broadcast(this, previousRange);
 }
 
 void AUnit::setMoving()
 {
-	setUnitState(EUnitState::MOVING);
+	if(UnitState == EUnitState::MOVING) { return; }
+
+	int32 previousRange = getUnitRange();
+	UnitState = EUnitState::MOVING;
+
+	mUnitStateChangeEvent.Broadcast(this, previousRange);
 }
 
 bool AUnit::isShooting()const
@@ -281,6 +316,16 @@ bool AUnit::isShooting()const
 bool AUnit::isOnFire() const
 {
 	return bIsOnFire;
+}
+
+bool AUnit::isUsingPrimaryWeapon() const
+{
+	return mCurrentWeapon == EUnitAttackingWeapon::PRIMARY_WEAPON;
+}
+
+bool AUnit::isUsingSecondaryWeapon() const
+{
+	return mCurrentWeapon == EUnitAttackingWeapon::SECONDARY_WEAPON;
 }
 
 const FText & AUnit::getPrimaryWeaponName() const

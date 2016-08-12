@@ -18,7 +18,6 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, EditAnyWhere, Category = "Gameplay")
 	int32 MaxUnitTurnPoints;
-	//int32 MovementRangeInTiles;
 
 	UPROPERTY(BlueprintReadWrite, EditAnyWhere, Category = "Gameplay")
 	int32 HealthPoints;
@@ -56,12 +55,12 @@ public:
 
 	void attack(AUnit& otherUnit);
 
+	void attack(const FVector& attackPoint);
+
 	int32 getUnitRange()const;
 
 	UFUNCTION(BlueprintCallable, Category = "Gameplay")
 	void applyDamage(float dmgValue);
-
-	void setUnitState(EUnitState newUnitState);
 
 	void setAttacking(EUnitAttackingWeapon unitWeapon);
 
@@ -70,6 +69,10 @@ public:
 	bool isShooting()const;
 
 	bool isOnFire()const;
+
+	bool isUsingPrimaryWeapon()const;
+
+	bool isUsingSecondaryWeapon()const;
 
 	const FText& getPrimaryWeaponName()const;
 
