@@ -12,8 +12,6 @@ AWeapon::AWeapon()
 
 	BaseRoot = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
 	BaseRoot->SetupAttachment(RootComponent);
-	//BaseRoot->SetWorldLocation(FVector(0.f, 0.f, 0.f));
-	//RootComponent = BaseRoot;
 
 	WeaponMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WeaponMesh"));
 	WeaponMesh->SetupAttachment(BaseRoot);

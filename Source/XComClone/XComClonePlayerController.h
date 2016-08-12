@@ -16,10 +16,4 @@ class XCOMCLONE_API AXComClonePlayerController : public APlayerController
 public:
 
 	AXComClonePlayerController();
-
-protected:
-
-
-	
-	
 };

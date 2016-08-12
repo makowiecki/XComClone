@@ -19,7 +19,6 @@ void AXComCloneSpectatorPawn::MoveForward(float Value)
 	if(Value != 0.0f)
 	{
 		CameraComponent->MoveForward(Value);
-		//AddMovementInput(GetActorForwardVector(), Value);
 
 	}
 }
@@ -29,7 +28,6 @@ void AXComCloneSpectatorPawn::MoveRight(float Value)
 	if(Value != 0.0f)
 	{
 		CameraComponent->MoveRight(Value);
-		//AddMovementInput(GetActorRightVector(), Value);
 	}
 }
 

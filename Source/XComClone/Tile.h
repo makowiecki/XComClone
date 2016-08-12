@@ -15,12 +15,7 @@ class XCOMCLONE_API ATile : public AActor
 	GENERATED_BODY()
 			
 public:	
-
-
-	/* Cost of moving into this tile*/
-	UPROPERTY(BlueprintReadWrite, EditAnyWhere, Category = "Tile")
-	int32 Cost;
-
+	
 	/* X Coordinate in Map space */
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Tile")
 	int32 MapX;

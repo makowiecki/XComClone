@@ -99,8 +99,3 @@ AXComCloneGameState::FOnTurnChanged & AXComCloneGameState::OnTurnChanged()
 {
 	return mTurnChangedEvent;
 }
-
-void AXComCloneGameState::Tick(float DeltaSeconds)
-{
-	//GEngine->AddOnScreenDebugMessage(1, 1.f, FColor::Green, FString("GameStateTick; Player turn: ") + FString(CurrentPlayer == EPlayerId::PLAYER_1 ? "PLAYER_1" : "PLAYER_2"));
-}

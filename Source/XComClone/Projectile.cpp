@@ -17,10 +17,6 @@ AProjectile::AProjectile()
 	CollisionComp->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
 	CollisionComp->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Block);
 
-	//FScriptDelegate OnHitDelegate;
-	//OnHitDelegate.BindUFunction(this, "OnHit");
-	//CollisionComp->OnComponentHit.Add(OnHitDelegate);	
-
 	// Players can't walk on it
 	CollisionComp->SetWalkableSlopeOverride(FWalkableSlopeOverride(WalkableSlope_Unwalkable, 0.f));
 	CollisionComp->CanCharacterStepUpOn = ECB_No;

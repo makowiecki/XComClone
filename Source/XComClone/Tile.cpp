@@ -53,9 +53,7 @@ ATile::ATile()
 	OnEndMouseOverDelegate.BindUFunction(this, "OnEndMouseOver");
 	TileMesh->OnEndCursorOver.Add(OnEndMouseOverDelegate);
 	
-
-
-	Cost = 1;
+	TileMesh->CastShadow = false;
 
 	bTileClicked = false;
 	TileMode = ETileMode::EMPTY;
@@ -83,26 +81,6 @@ void ATile::BeginPlay()
 void ATile::Tick( float DeltaTime )
 {
 	Super::Tick( DeltaTime );
-	
-	//{ DEBUG
-	//	switch(TileMode)
-	//	{
-	//		case ETileMode::EMPTY:
-	//			//TileMeshMaterial->SetVectorParameterValue(FName(TEXT("Color")), FLinearColor(0.f, 0.f, 0.5f));
-	//			break;
-	//		case ETileMode::BLOCKED:
-	//			TileMeshMaterial->SetVectorParameterValue(FName(TEXT("Color")), FLinearColor(0.f, 0.f, 0.f));
-	//			break;
-	//		case ETileMode::ENEMY:
-	//			TileMeshMaterial->SetVectorParameterValue(FName(TEXT("Color")), FLinearColor(1.f, 0.f, 0.f));
-	//			break;
-	//		case ETileMode::ALLY:
-	//			TileMeshMaterial->SetVectorParameterValue(FName(TEXT("Color")), FLinearColor(0.f, 1.f, 0.f));
-	//			break;
-	//		default:
-	//			break;
-	//	}
-	//}
 
 	if(bChangedTileMode)
 	{
