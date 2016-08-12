@@ -5,7 +5,7 @@
 #include "GameFramework/Actor.h"
 #include "Explosives.generated.h"
 
-UCLASS()
+UCLASS(abstract)
 class XCOMCLONE_API AExplosives : public AActor
 {
 	GENERATED_BODY()
@@ -14,15 +14,15 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, EditAnyWhere, Category = "Explosives")
 	float Damage;
-	
-	UPROPERTY(BlueprintReadWrite, EditAnyWhere, Category = "Explosives")
-	float ExplosionRange;
 
 	UPROPERTY(BlueprintReadWrite, EditAnyWhere, Category = "Explosives")
-	int32 TileDistanceRange;
+	int32 TileDistanceToThrowRange;
 
 	UPROPERTY(BlueprintReadWrite, EditAnyWhere, Category = "Explosives")
 	FText ExplosivesnName;
+
+	UPROPERTY(BlueprintReadWrite, EditAnyWhere, Category = "Explosives")
+	UParticleSystem *ExplosionEffect;
 
 	// Sets default values for this actor's properties
 	AExplosives();
